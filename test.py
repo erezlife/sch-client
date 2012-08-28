@@ -27,3 +27,4 @@ data = [
 output = api.set_residents(columns, data, {'sess_cde': '1213FA'})
 
 print(output)
+print('testing')
