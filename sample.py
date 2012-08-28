@@ -4,7 +4,7 @@ import sch_client
 
 key = 'yEm9RJSTbO0WnjXtJuGnWNldSV7F9TVI'
 secret = '$2a$10$HPP4hp2SA/GR6S7UsgDqjeMRnsmmea/rSF/rH/OMN02UQY5067CVi'
-host = 'http://sch.site/api'
+host = 'https://test.simplecampushousing.com/api'
 
 api = sch_client.API(host, key, secret)
 output = api.get_residents({'sess_cde': '1213FA'})
