@@ -32,6 +32,21 @@ class API:
         self.response = urllib2.urlopen(req)
         return json.loads(self.response.read())
 
+    def get_instances(self, active=True):
+        options = {
+            'token': self.token,
+            'active': 1 if active else 0
+        }
+        url = self.url + '/instance?' + urllib.urlencode(options)
+        self.response = urllib2.urlopen(url)
+        instances = json.loads(self.response.read())
+        for instance in instances:
+            if len(instance) == 1:
+                msg = "API ERROR: Instance '" + str(instance['id']) + "' does not have mapped fields"
+                raise Exception(msg)
+            del instance['id']
+        return instances
+
     def auth(self):
         data = json.dumps({'key': self.key, 'secret': self.secret})
         req = urllib2.Request(self.url + '/auth', data, {'Content-Type': 'application/json'})
