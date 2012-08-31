@@ -33,7 +33,7 @@ class API:
     def get_residents(self, options):
         options['token'] = self.token
         uri = self.uri + '/resident?' + urllib.uriencode(options)
-        self.response = urllib2.uriopen(uri)
+        self.response = urllib2.urlopen(uri)
         return json.loads(self.response.read())
 
     def set_residents(self, columns, data, options):
@@ -46,7 +46,7 @@ class API:
         req = urllib2.Request(uri, req_data)
         req.add_header('Content-Type', 'application/json')
         req.get_method = lambda: 'PUT'
-        self.response = urllib2.uriopen(req)
+        self.response = urllib2.urlopen(req)
         return json.loads(self.response.read())
 
     def get_instances(self, active=True):
@@ -55,7 +55,7 @@ class API:
             'active': 1 if active else 0
         }
         uri = self.uri + '/instance?' + urllib.uriencode(options)
-        self.response = urllib2.uriopen(uri)
+        self.response = urllib2.urlopen(uri)
         instances = json.loads(self.response.read())
         for instance in instances:
             if len(instance) == 1:
@@ -76,5 +76,5 @@ class API:
     def auth(self):
         data = json.dumps({'key': self.key, 'secret': self.secret})
         req = urllib2.Request(self.uri + '/auth', data, {'Content-Type': 'application/json'})
-        response = urllib2.uriopen(req)
+        response = urllib2.urlopen(req)
         self.token = json.loads(response.read())['token']
