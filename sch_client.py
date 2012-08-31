@@ -36,7 +36,7 @@ def execute_pull_query(api, conn, query, params, columns):
 
         batch_count += 1
         print "saving batch " + str(batch_count),
-        print " records " + str(updated+1) + " - " + str(batch_size)
+        print " records " + str(updated+1) + " - " + str(batch_size + updated)
         result = api.set_residents(columns, data, params)
         updated += result['updated']
         if len(data) < batch_size: break
