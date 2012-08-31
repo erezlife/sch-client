@@ -73,7 +73,7 @@ class API:
         while True:
             row = cursor.fetchone()
             if not row: break
-            data.append([str(i) for i in row])
+            data.append([str(i).rstrip() for i in row])
 
         output = self.set_residents(columns, data, params)
         return output['updated']
