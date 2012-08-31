@@ -32,7 +32,13 @@ def execute_pull_query(api, conn, query, params, columns):
         while len(data) < batch_size:
             row = cursor.fetchone()
             if not row: break
-            data.append([str(i).rstrip() for i in row])
+            record = []
+            for val in row:
+                if val is None:
+                    record.append(val)
+                else:
+                    record.append(str(val).rstrip())
+            data.append(record)
 
         batch_count += 1
         print "saving batch " + str(batch_count),
