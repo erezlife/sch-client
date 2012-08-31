@@ -1,0 +1,22 @@
+[
+  {"name": "id"},
+  {"model": "Resident", "field": "firstName"},
+  {"model": "Resident", "field": "lastName"},
+  {"model": "Resident", "field": "gender"},
+  {"model": "Resident", "field": "birthDate"},
+  {"model": "Resident", "field": "email"},
+  {"model": "Resident", "field": "phone"},
+  {"model": "Resident", "field": "credits"},
+  {"model": "ResidentInstance", "field": "enrolledCredits"},
+  {"model": "ResidentInstance", "field": "eligibleForHousing"},
+  {
+    "model": "ResidentInstance",
+    "field": "residentType",
+    "assnLookupField": "ref"
+  },
+  {
+    "model": "ResidentInstance",
+    "field": "dataValue",
+    "arguments": ["housing-exception"]
+  }
+]
