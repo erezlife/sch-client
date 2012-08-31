@@ -69,8 +69,13 @@ class API:
         query, query_params = prepare_query(query, params)
         cursor.execute(query, *query_params)
 
-        rows = cursor.fetchall()
-        output = self.set_residents(columns, rows, params)
+        data = []
+        while True:
+            row = cursor.fetchone()
+            if not row: break
+            data.append([str(i) for i in row])
+
+        output = self.set_residents(columns, data, params)
         return output['updated']
 
     def auth(self):
