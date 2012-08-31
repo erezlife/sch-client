@@ -19,6 +19,30 @@ def prepare_query(query, params):
         query = query[:start] + '?' + query[end + 3:]
     return query, param_vals
 
+def execute_pull_query(api, conn, query, params, columns):
+    cursor = conn.cursor()
+    query, query_params = prepare_query(query, params)
+    cursor.execute(query, *query_params)
+
+    updated = 0
+    batch_count = 0
+    batch_size = 20
+    while True:
+        data = []
+        while len(data) < batch_size:
+            row = cursor.fetchone()
+            if not row: break
+            data.append([str(i).rstrip() for i in row])
+
+        batch_count += 1
+        print "saving batch " + str(batch_count),
+        print " records " + str(updated+1) + " - " + str(batch_size)
+        result = api.set_residents(columns, data, params)
+        updated += result['updated']
+        if len(data) < batch_size: break
+
+    return updated
+
 class API:
 
     def __init__(self, uri=None, key=None, secret=None):
@@ -63,26 +87,6 @@ class API:
                 raise Exception(msg)
             del instance['id']
         return instances
-
-    def execute_pull_query(self, conn, query, params, columns):
-        cursor = conn.cursor()
-        query, query_params = prepare_query(query, params)
-        cursor.execute(query, *query_params)
-
-        data = []
-        updated = 0
-        while True:
-            row = cursor.fetchone()
-            if not row: break
-            # data.append([str(i).rstrip() for i in row])
-            print "saving " + str(row[0])
-            data = [[[str(i).rstrip() for i in row]]]
-            result = self.set_residents(columns, data, params)
-            updated += result['updated']
-
-        # output = self.set_residents(columns, data, params)
-        # return output['updated']
-        return updated
 
     def auth(self):
         data = json.dumps({'key': self.key, 'secret': self.secret})

@@ -16,5 +16,5 @@ for instance in instances:
     for key in instance:
         print key + "=" + instance[key] + " ",
     print
-    num_updated = api.execute_pull_query(connection, sql, instance, columns)
+    num_updated = sch_client.execute_pull_query(api, connection, sql, instance, columns)
     print "Records updated: " + str(num_updated)
