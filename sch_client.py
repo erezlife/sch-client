@@ -70,13 +70,19 @@ class API:
         cursor.execute(query, *query_params)
 
         data = []
+        updated = 0
         while True:
             row = cursor.fetchone()
             if not row: break
-            data.append([str(i).rstrip() for i in row])
+            # data.append([str(i).rstrip() for i in row])
+            print "saving " + row[0]
+            data = [[[str(i).rstrip() for i in row]]]
+            result = self.set_residents(columns, data, params)
+            updated += result['updated']
 
-        output = self.set_residents(columns, data, params)
-        return output['updated']
+        # output = self.set_residents(columns, data, params)
+        # return output['updated']
+        return updated
 
     def auth(self):
         data = json.dumps({'key': self.key, 'secret': self.secret})
