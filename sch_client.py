@@ -75,7 +75,7 @@ class API:
             row = cursor.fetchone()
             if not row: break
             # data.append([str(i).rstrip() for i in row])
-            print "saving " + row[0]
+            print "saving " + str(row[0])
             data = [[[str(i).rstrip() for i in row]]]
             result = self.set_residents(columns, data, params)
             updated += result['updated']
