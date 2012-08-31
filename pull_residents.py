@@ -14,6 +14,7 @@ instances = api.get_instances()
 for instance in instances:
     print "Processing instance ",
     for key in instance:
-        print key + "=" + instance[key] + " "
+        print key + "=" + instance[key] + " ",
+    print
     num_updated = api.execute_pull_query(connection, sql, instance, columns)
-    print "Records updated: " + num_updated
+    print "Records updated: " + str(num_updated)
