@@ -26,7 +26,7 @@ def execute_pull_query(api, conn, query, params, columns):
 
     updated = 0
     batch_count = 0
-    batch_size = 20
+    batch_size = 50
     while True:
         data = []
         while len(data) < batch_size:
