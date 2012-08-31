@@ -9,4 +9,4 @@ api = sch_client.API(config['uri'], config['key'], config['secret'])
 instances = api.get_instances()
 for instance in instances:
     residents = api.get_residents(instance)
-    print(len(residents))
+    print len(residents)

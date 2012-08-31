@@ -1,0 +1,40 @@
+[
+  {"name": "id"},
+  {"model": "Resident", "field": "firstName"},
+  {"model": "Resident", "field": "lastName"},
+  {"model": "Resident", "field": "middleName"},
+  {"model": "Resident", "field": "gender"},
+  {"model": "Resident", "field": "birthDate"},
+  {"model": "Resident", "field": "email"},
+  {
+    "model": "ResidentInstance",
+    "field": "classYear",
+    "assnLookupField": "abbreviation",
+    "transforms": {
+      "SOPH": "SO",
+      "FRES": "FR"
+    }
+  },
+  {"model": "Resident", "field": "major"},
+  {"model": "ResidentInstance", "field": "enrolledCredits"},
+  {"model": "Resident", "field": "addressPart", "arguments": ["address1"]},
+  {"model": "Resident", "field": "addressPart", "arguments": ["address2"]},
+  {"model": "Resident", "field": "addressPart", "arguments": ["city"]},
+  {"model": "Resident", "field": "addressPart", "arguments": ["state"]},
+  {"model": "Resident", "field": "addressPart", "arguments": ["zip"]},
+  {"model": "Resident", "field": "phone"},
+  {
+    "model": "ResidentInstance",
+    "field": "residentType",
+    "assnLookupField": "ref",
+    "transforms": {
+      "RETR": "Returning",
+      "CONT": "Returning",
+      "NEW": "New"
+    }
+  },
+  {"ignore": true},
+  {"ignore": true},
+  {"ignore": true},
+  {"ignore": true}
+]
