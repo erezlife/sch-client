@@ -32,7 +32,7 @@ class API:
 
     def get_residents(self, options):
         options['token'] = self.token
-        uri = self.uri + '/resident?' + urllib.uriencode(options)
+        uri = self.uri + '/resident?' + urllib.urlencode(options)
         self.response = urllib2.urlopen(uri)
         return json.loads(self.response.read())
 
@@ -54,7 +54,7 @@ class API:
             'token': self.token,
             'active': 1 if active else 0
         }
-        uri = self.uri + '/instance?' + urllib.uriencode(options)
+        uri = self.uri + '/instance?' + urllib.urlencode(options)
         self.response = urllib2.urlopen(uri)
         instances = json.loads(self.response.read())
         for instance in instances:
