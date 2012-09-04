@@ -89,7 +89,7 @@ class API:
         options['token'] = self.token
         options['columns'] = columns
         options['data'] = data
-        req_data = json.dumps(options)
+        req_data = json.dumps(options).encode('utf8')
         uri = self.uri + '/resident'
 
         req = create_request(uri, req_data)
@@ -114,7 +114,7 @@ class API:
         return instances
 
     def auth(self):
-        data = json.dumps({'key': self.key, 'secret': self.secret})
+        data = json.dumps({'key': self.key, 'secret': self.secret}).encode('utf8')
         req = create_request(self.uri + '/auth', data, {'Content-Type': 'application/json'})
         response = urlopen(req)
         self.token = json.loads(response.read())['token']
