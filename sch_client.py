@@ -83,7 +83,7 @@ class API:
         options['token'] = self.token
         uri = self.uri + '/resident?' + urllib.urlencode(options)
         self.response = urlopen(uri)
-        return json.loads(self.response.read())
+        return json.loads(self.response.read().decode('utf8'))
 
     def set_residents(self, columns, data, options):
         options['token'] = self.token
@@ -96,7 +96,7 @@ class API:
         req.add_header('Content-Type', 'application/json')
         req.get_method = lambda: 'PUT'
         self.response = urlopen(req)
-        return json.loads(self.response.read())
+        return json.loads(self.response.read().decode('utf8'))
 
     def get_instances(self, active=True):
         options = {
@@ -117,4 +117,4 @@ class API:
         data = json.dumps({'key': self.key, 'secret': self.secret}).encode('utf8')
         req = create_request(self.uri + '/auth', data, {'Content-Type': 'application/json'})
         response = urlopen(req)
-        self.token = json.loads(response.read())['token']
+        self.token = json.loads(response.read().decode('utf8'))['token']
