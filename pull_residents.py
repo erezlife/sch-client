@@ -12,9 +12,9 @@ connection = pyodbc.connect(config['db_connection'])
 
 instances = api.get_instances()
 for instance in instances:
-    print "Processing instance ",
+    sch_client.printme("Processing instance", ' ')
     for key in instance:
-        print key + "=" + instance[key] + " ",
-    print
+        sch_client.printme(key + "=" + instance[key], ' ')
+    sch_client.printme()
     num_updated = sch_client.execute_pull_query(api, connection, sql, instance, columns)
-    print "Records updated: " + str(num_updated)
+    sch_client.printme("Records updated: " + str(num_updated))

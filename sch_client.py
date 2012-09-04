@@ -3,7 +3,10 @@
 import urllib
 import urllib2
 import json
+import sys
 
+def printme(s="", end="\n"):
+    sys.stdout.write(str(s) + end)
 
 def prepare_query(query, params):
     param_vals = []
@@ -41,8 +44,8 @@ def execute_pull_query(api, conn, query, params, columns):
             data.append(record)
 
         batch_count += 1
-        print "saving batch " + str(batch_count),
-        print " records " + str(updated+1) + " - " + str(batch_size + updated)
+        printme("saving batch " + str(batch_count),"")
+        printme(" records " + str(updated+1) + " - " + str(batch_size + updated))
         result = api.set_residents(columns, data, params)
         updated += result['updated']
         if len(data) < batch_size: break
