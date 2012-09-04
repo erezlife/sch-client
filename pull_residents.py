@@ -5,8 +5,8 @@ import json
 import pyodbc
 
 config = json.load(open('config.json'))
-sql = open('db/select-resident.jenzabar.sql').read()
-columns = json.load(open('db/select-resident.jenzabar.json'))
+sql = open(config['pull_sql']).read()
+columns = json.load(open(config['pull_map']))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 connection = pyodbc.connect(config['db_connection'])
 
