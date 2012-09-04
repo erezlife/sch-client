@@ -8,6 +8,7 @@ if sys.version_info < (3, 0):
     import urllib2
 else:
     import urllib.request
+    import urllib.parse
 
 def printme(s="", end="\n"):
     sys.stdout.write(str(s) + end)
@@ -17,6 +18,12 @@ def urlopen(req):
         return urllib2.urlopen(req)
     else:
         return urllib.request.urlopen(req)
+
+def urlencode(s):
+    if sys.version_info < (3, 0):
+        return urllib.urlencode(s)
+    else:
+        return urllib.parse.urlencode(s)
 
 def create_request(*params):
     if sys.version_info < (3, 0):
@@ -81,7 +88,7 @@ class API:
 
     def get_residents(self, options):
         options['token'] = self.token
-        uri = self.uri + '/resident?' + urllib.urlencode(options)
+        uri = self.uri + '/resident?' + urlencode(options)
         self.response = urlopen(uri)
         return json.loads(self.response.read().decode('utf8'))
 
@@ -103,7 +110,7 @@ class API:
             'token': self.token,
             'active': 1 if active else 0
         }
-        uri = self.uri + '/instance?' + urllib.urlencode(options)
+        uri = self.uri + '/instance?' + urlencode(options)
         self.response = urlopen(uri)
         instances = json.loads(self.response.read())
         for instance in instances:
