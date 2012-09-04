@@ -8,7 +8,7 @@ host = 'https://test.simplecampushousing.com/api'
 
 api = sch_client.API(host, key, secret)
 output = api.get_residents({'sess_cde': '1213FA'})
-print len(output)
+print(len(output))
 
 columns = [
     {'name': 'id'},
@@ -27,4 +27,4 @@ data = [
 
 output = api.set_residents(columns, data, {'sess_cde': '1213FA'})
 
-print output
+print(output)
