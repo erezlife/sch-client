@@ -112,7 +112,7 @@ class API:
         }
         uri = self.uri + '/instance?' + urlencode(options)
         self.response = urlopen(uri)
-        instances = json.loads(self.response.read())
+        instances = json.loads(self.response.read().decode('utf8'))
         for instance in instances:
             if len(instance) == 1:
                 msg = "API ERROR: Instance '" + str(instance['id']) + "' does not have mapped fields"
