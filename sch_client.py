@@ -1,12 +1,28 @@
 #!/usr/bin/python
 
 import urllib
-import urllib2
 import json
 import sys
 
+if sys.version_info < (3, 0):
+    import urllib2
+else:
+    import urllib.request
+
 def printme(s="", end="\n"):
     sys.stdout.write(str(s) + end)
+
+def urlopen(req):
+    if sys.version_info < (3, 0):
+        return urllib2.urlopen(req)
+    else:
+        return urllib.request.urlopen(req)
+
+def create_request(*params):
+    if sys.version_info < (3, 0):
+        return urllib2.Request(*params)
+    else:
+        return urllib.request.Request(*params)
 
 def prepare_query(query, params):
     param_vals = []
@@ -66,7 +82,7 @@ class API:
     def get_residents(self, options):
         options['token'] = self.token
         uri = self.uri + '/resident?' + urllib.urlencode(options)
-        self.response = urllib2.urlopen(uri)
+        self.response = urlopen(uri)
         return json.loads(self.response.read())
 
     def set_residents(self, columns, data, options):
@@ -76,10 +92,10 @@ class API:
         req_data = json.dumps(options)
         uri = self.uri + '/resident'
 
-        req = urllib2.Request(uri, req_data)
+        req = create_request(uri, req_data)
         req.add_header('Content-Type', 'application/json')
         req.get_method = lambda: 'PUT'
-        self.response = urllib2.urlopen(req)
+        self.response = urlopen(req)
         return json.loads(self.response.read())
 
     def get_instances(self, active=True):
@@ -88,7 +104,7 @@ class API:
             'active': 1 if active else 0
         }
         uri = self.uri + '/instance?' + urllib.urlencode(options)
-        self.response = urllib2.urlopen(uri)
+        self.response = urlopen(uri)
         instances = json.loads(self.response.read())
         for instance in instances:
             if len(instance) == 1:
@@ -99,6 +115,6 @@ class API:
 
     def auth(self):
         data = json.dumps({'key': self.key, 'secret': self.secret})
-        req = urllib2.Request(self.uri + '/auth', data, {'Content-Type': 'application/json'})
-        response = urllib2.urlopen(req)
+        req = create_request(self.uri + '/auth', data, {'Content-Type': 'application/json'})
+        response = urlopen(req)
         self.token = json.loads(response.read())['token']
