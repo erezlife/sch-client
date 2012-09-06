@@ -8,6 +8,7 @@ config = json.load(open('config.json'))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 connection = pyodbc.connect(config['db_connection'])
 cursor = connection.cursor()
+verbose = False
 
 residency_select = """
 SELECT RESIDENT_COMMUTER
@@ -44,8 +45,16 @@ AND ACADEMIC_YEAR = $%$ACADEMIC_YEAR$%$
 AND ACADEMIC_TERM = $%$ACADEMIC_TERM$%$
 AND ACADEMIC_SESSION = $%$ACADEMIC_SESSION$%$"""
 
+res_update_count = 0
+res_null_count = 0
+meal_update_count = 0
 instances = api.get_instances()
 for instance in instances:
+    sch_client.printme("Processing instance", ' ')
+    for key in instance:
+        sch_client.printme(key + "=" + instance[key], ' ')
+    sch_client.printme()
+
     residents = api.get_residents(instance)
     for resident in residents:
         params = instance
@@ -55,15 +64,17 @@ for instance in instances:
         # Update Residency
         if resident['residency']:
             # standard update
-            sch_client.printme("Updating Residency for " + params['id'], ": ")
-            sch_client.printme(json.dumps(resident['residency']))
+            if verbose:
+                sch_client.printme("Updating Residency for " + params['id'], ": ")
+                sch_client.printme(json.dumps(resident['residency']))
             params.update(resident['residency'])
             params['RESIDENT_COMMUTER'] = 'R'
             query, query_params = sch_client.prepare_query(residency_update, params)
-            cursor.execute(query, *query_params)
+            res_update_count += cursor.execute(query, *query_params).rowcount
         else:
             # check that we aren't overriding existing commuter status
-            sch_client.printme("Setting null Residency for " + params['id'])
+            if verbose:
+                sch_client.printme("Setting null Residency for " + params['id'])
             query, query_params = sch_client.prepare_query(residency_select, params)
             cursor.execute(query, *query_params)
             row = cursor.fetchone()
@@ -76,17 +87,23 @@ for instance in instances:
                 params['RESIDENT_COMMUTER'] = row.RESIDENT_COMMUTER
 
             query, query_params = sch_client.prepare_query(residency_update, params)
-            cursor.execute(query, *query_params)
+            res_null_count += cursor.execute(query, *query_params).rowcount
 
         # Update Meal Plan separately so updates are only run if value is set
         # FOOD_PLAN should never be set to null by this script
         if resident['meal_plan']:
-            sch_client.printme("Updating meal plan for " + params['id'], ": ")
-            sch_client.printme(json.dumps(resident['meal_plan']))
+            if verbose:
+                sch_client.printme("Updating meal plan for " + params['id'], ": ")
+                sch_client.printme(json.dumps(resident['meal_plan']))
             params['FOOD_PLAN'] = resident['meal_plan']['FOOD_PLAN']
             query, query_params = sch_client.prepare_query(mealplan_update, params)
-            cursor.execute(query, *query_params)
+            meal_update_count += cursor.execute(query, *query_params).rowcount
 
-    # sch_client.printme(len(residents))
-connection.commit()
+    connection.commit()
+    sch_client.printme("Total Residents: " + str(len(residents)))
+    sch_client.printme("Residency updates: " + str(res_update_count + res_null_count), " ")
+    sch_client.printme("(" + " (" + str(res_update_count) + " placed, " + str(res_null_count) + " unplaced)")
+    sch_client.printme("Meal Plan updates: " + str(mealplan_update))
+    sch_client("Record(s) not found: " + str(len(residents) - res_update_count - res_null_count))
+
 connection.close()
