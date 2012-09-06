@@ -21,7 +21,7 @@ AND ACADEMIC_SESSION = $%$ACADEMIC_SESSION$%$
 residency_update = """
 UPDATE Residency
 SET DORM_CAMPUS = $%$DORM_CAMPUS$%$,
- RESIDENT_COMMUTER = 'R',
+ RESIDENT_COMMUTER = $%$RESIDENT_COMMUTER$%$,
  DORM_PLAN = $%$DORM_PLAN$%$,
  DORM_BUILDING = $%$DORM_BUILDING$%$,
  DORM_ROOM = $%$DORM_ROOM$%$,
@@ -50,21 +50,32 @@ for instance in instances:
     for resident in residents:
         params = instance
         params['id'] = resident['id'] if resident['id'][0] == 'P' else 'P' + resident['id']
+        params['ACADEMIC_SESSION'] = config['powercampus']['push_params']['ACADEMIC_SESSION']
+        params.update(resident['residency'])
 
         # Update Residency
         if resident['residency']:
             # standard update
             sch_client.printme("Updating Residency for " + params['id'], ": ")
             sch_client.printme(json.dumps(resident['residency']))
-            params.update(resident['residency'])
-            params['ACADEMIC_SESSION'] = config['powercampus']['push_params']['ACADEMIC_SESSION']
+            params['RESIDENT_COMMUTER'] = 'R'
             query, query_params = sch_client.prepare_query(residency_update, params)
             cursor.execute(query, *query_params)
         else:
             # check that we aren't overriding existing commuter status
             sch_client.printme("Setting null Residency for " + params['id'])
             query, query_params = sch_client.prepare_query(residency_select, params)
-            exit()
+            cursor.execute(query, *query_params)
+            row = cursor.fetchone()
+            params['DORM_CAMPUS'] = None
+            params['DORM_PLAN'] = None
+            params['DORM_BUILDING'] = None
+            params['DORM_ROOM'] = None
+            params['RESIDENT_COMMUTER'] = None
+            if row.RESIDENT_COMMUTER == 'C':
+                params['RESIDENT_COMMUTER'] = 'C'
+
+            query, query_params = sch_client.prepare_query(residency_update, params)
             cursor.execute(query, *query_params)
 
         # Update Meal Plan separately so updates are only run if value is set
