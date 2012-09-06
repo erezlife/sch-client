@@ -51,13 +51,13 @@ for instance in instances:
         params = instance
         params['id'] = resident['id'] if resident['id'][0] == 'P' else 'P' + resident['id']
         params['ACADEMIC_SESSION'] = config['powercampus']['push_params']['ACADEMIC_SESSION']
-        params.update(resident['residency'])
 
         # Update Residency
         if resident['residency']:
             # standard update
             sch_client.printme("Updating Residency for " + params['id'], ": ")
             sch_client.printme(json.dumps(resident['residency']))
+            params.update(resident['residency'])
             params['RESIDENT_COMMUTER'] = 'R'
             query, query_params = sch_client.prepare_query(residency_update, params)
             cursor.execute(query, *query_params)
