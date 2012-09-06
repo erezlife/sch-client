@@ -39,6 +39,8 @@ for instance in instances:
     for resident in residents:
         params = instance
         params['id'] = resident['id'] if resident['id'][0] == 'P' else 'P' + resident['id']
+        params['FOOD_PLAN'] = resident['meal_plan']['FOOD_PLAN'] if resident['meal_plan'] else None
+
         if resident['residency']:
             # standard update
             params.update(resident['residency'])
