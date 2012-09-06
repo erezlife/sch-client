@@ -54,7 +54,7 @@ for instance in instances:
         # Update Residency
         if resident['residency']:
             # standard update
-            sch_client.printme("Updating Residency for " + resident['id'], ": ")
+            sch_client.printme("Updating Residency for " + params['id'], ": ")
             sch_client.printme(json.dumps(resident['residency']))
             params.update(resident['residency'])
             params['ACADEMIC_SESSION'] = config['powercampus']['push_params']['ACADEMIC_SESSION']
@@ -62,7 +62,7 @@ for instance in instances:
             cursor.execute(query, *query_params)
         else:
             # check that we aren't overriding existing commuter status
-            sch_client.printme("Setting null Residency for " + resident['id'])
+            sch_client.printme("Setting null Residency for " + params['id'])
             query, query_params = sch_client.prepare_query(residency_select, params)
             exit()
             cursor.execute(query, *query_params)
@@ -70,7 +70,7 @@ for instance in instances:
         # Update Meal Plan separately so updates are only run if value is set
         # FOOD_PLAN should never be set to null by this script
         if resident['meal_plan']:
-            sch_client.printme("Updating meal plan for " + resident['id'], ": ")
+            sch_client.printme("Updating meal plan for " + params['id'], ": ")
             sch_client.printme(json.dumps(resident['meal_plan']))
             params['FOOD_PLAN'] = resident['meal_plan']['FOOD_PLAN']
             query, query_params = sch_client.prepare_query(mealplan_update, params)
