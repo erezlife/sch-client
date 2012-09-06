@@ -56,6 +56,7 @@ for instance in instances:
     sch_client.printme()
 
     residents = api.get_residents(instance)
+    sch_client.printme("Total Residents: " + str(len(residents)))
     for resident in residents:
         params = instance
         params['id'] = resident['id'] if resident['id'][0] == 'P' else 'P' + resident['id']
@@ -100,7 +101,6 @@ for instance in instances:
             meal_update_count += cursor.execute(query, *query_params).rowcount
 
     connection.commit()
-    sch_client.printme("Total Residents: " + str(len(residents)))
     sch_client.printme("Residency updates: " + str(res_update_count + res_null_count), " ")
     sch_client.printme("(" + " (" + str(res_update_count) + " placed, " + str(res_null_count) + " unplaced)")
     sch_client.printme("Meal Plan updates: " + str(mealplan_update))
