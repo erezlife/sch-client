@@ -77,3 +77,4 @@ for instance in instances:
             cursor.execute(query, *query_params)
 
     # sch_client.printme(len(residents))
+cursor.commit()

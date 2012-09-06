@@ -7,7 +7,7 @@
 	"pull_map": "db/select-resident.jenzabar.json",
 	"powercampus": {
 		"push_params": {
-			"ACADEMIC_SESSION": "Reg"
+			"ACADEMIC_SESSION": "REG"
 		}
 	}
 }
