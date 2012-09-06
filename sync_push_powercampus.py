@@ -3,8 +3,10 @@
 import sch_client
 import json
 import pyodbc
+import os
 
-config = json.load(open('config.json'))
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+config = json.load(open(os.path.join(__location__, 'config.json')))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 connection = pyodbc.connect(config['db_connection'])
 cursor = connection.cursor()
