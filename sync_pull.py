@@ -7,8 +7,8 @@ import os
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 config = json.load(open(os.path.join(__location__, 'config.json')))
-sql = open(config['pull_sql']).read()
-columns = json.load(open(config['pull_map']))
+sql = open(os.path.join(__location__, config['pull_sql'])).read()
+columns = json.load(open(os.path.join(__location__, config['pull_map'])))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 connection = pyodbc.connect(config['db_connection'])
 
