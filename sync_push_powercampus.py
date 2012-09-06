@@ -104,6 +104,6 @@ for instance in instances:
     sch_client.printme("Residency updates: " + str(res_update_count + res_null_count), " ")
     sch_client.printme("(" + " (" + str(res_update_count) + " placed, " + str(res_null_count) + " unplaced)")
     sch_client.printme("Meal Plan updates: " + str(meal_update_count))
-    sch_client("Record(s) not found: " + str(len(residents) - res_update_count - res_null_count))
+    sch_client.printme("Record(s) not found: " + str(len(residents) - res_update_count - res_null_count))
 
 connection.close()
