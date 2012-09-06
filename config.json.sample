@@ -6,7 +6,7 @@
 	"pull_sql": "db/select-resident.jenzabar.sql",
 	"pull_map": "db/select-resident.jenzabar.json",
 	"powercampus": {
-		"push_fields": {
+		"push_params": {
 			"ACADEMIC_SESSION": "Reg"
 		}
 	}

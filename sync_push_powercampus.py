@@ -44,6 +44,7 @@ for instance in instances:
         if resident['residency']:
             # standard update
             params.update(resident['residency'])
+            params['ACADEMIC_SESSION'] = config['powercampus']['push_params']['ACADEMIC_SESSION']
             query, query_params = sch_client.prepare_query(residency_update, params)
         else:
             # check that we aren't overriding existing commuter status
