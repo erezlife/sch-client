@@ -72,7 +72,7 @@ for instance in instances:
             params['DORM_BUILDING'] = None
             params['DORM_ROOM'] = None
             params['RESIDENT_COMMUTER'] = None
-            if row.RESIDENT_COMMUTER == 'C':
+            if row and row.RESIDENT_COMMUTER == 'C':
                 params['RESIDENT_COMMUTER'] = 'C'
 
             query, query_params = sch_client.prepare_query(residency_update, params)
