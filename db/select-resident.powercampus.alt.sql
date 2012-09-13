@@ -1,3 +1,6 @@
+-- Alternate PowerCampus sync script
+-- Used to pull additional custom fields for Franklin College
+
 SELECT	p.PEOPLE_ID,
 		pu.username + '@franklincollege.edu' as email,
 		p.FIRST_NAME,
