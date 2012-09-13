@@ -1,0 +1,48 @@
+[
+  {"model": "Resident", "field": "externalId"},
+  {"model": "Resident", "field": "email"},
+  {"model": "Resident", "field": "firstName"},
+  {"model": "Resident", "field": "middleName"},
+  {"model": "Resident", "field": "lastName"},
+  {"model": "Resident", "field": "birthDate"},
+  {"model": "Resident", "field": "phone"},
+  {"model": "ResidentInstance", "field": "dataValue", "arguments": "MailSlot"},
+  {
+    "model": "ResidentInstance",
+    "field": "residentType",
+    "assnLookupField": "ref",
+    "transforms": {
+      "R": "Returning",
+      "T": "Transfer",
+      "N": "New"
+    }
+  },
+  {
+    "model": "ResidentInstance",
+    "field": "classYear",
+    "assnLookupField": "abbreviation",
+    "transforms": {
+      "1": "FR",
+      "2": "SO",
+      "3": "JR",
+      "4": "SR",
+      "6": "GR",
+      "__default": null
+    }
+  },
+  {"model": "Resident", "field": "gender"},
+  {"model": "Resident", "field": "addressPart", "arguments": ["address1"]},
+  {"model": "Resident", "field": "addressPart", "arguments": ["address2"]},
+  {"model": "Resident", "field": "addressPart", "arguments": ["city"]},
+  {"model": "Resident", "field": "addressPart", "arguments": ["state"]},
+  {"model": "Resident", "field": "addressPart", "arguments": ["zip"]},
+  {"model": "Resident", "field": "addressPart", "arguments": ["country"]},
+  {
+    "model": "ResidentInstance",
+    "field": "eligibleForHousing",
+    "transforms": {
+      "1": true,
+      "0": false
+    }
+  }
+]
