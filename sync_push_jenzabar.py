@@ -140,7 +140,7 @@ for instance in instances:
     bldg_loc_set = set()
     bldg_set = set()
 
-    halls = sch_client.NestedDict()
+    halls = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     sch_client.printme("Total Rooms: " + str(len(rooms)))
     for room in rooms:
         # save hall/room information for future reference
@@ -151,8 +151,10 @@ for instance in instances:
         halls[room['BLDG_LOC_CDE']][room['BLDG_CDE']]['capacity'] += room['capacity']
         halls[room['BLDG_LOC_CDE']][room['BLDG_CDE']]['num_residents'] += room['num_residents']
 
-        params = room
+        params = instance
+        params.update(room)
         params['occupant_gender'] = params['gender'] if params['gender'] else 'I'
+        params['num_vacancies'] = room['capacity'] - room['num_residents']
         if room['num_residents'] == room['capacity']:
             params['room_sts'] = 'F'
         elif room['num_residents'] == 0:
