@@ -10,8 +10,10 @@ else:
     import urllib.request
     import urllib.parse
 
+
 def printme(s="", end="\n"):
     sys.stdout.write(str(s) + end)
+
 
 def urlopen(req):
     if sys.version_info < (3, 0):
@@ -19,17 +21,20 @@ def urlopen(req):
     else:
         return urllib.request.urlopen(req)
 
+
 def urlencode(s):
     if sys.version_info < (3, 0):
         return urllib.urlencode(s)
     else:
         return urllib.parse.urlencode(s)
 
+
 def create_request(*params):
     if sys.version_info < (3, 0):
         return urllib2.Request(*params)
     else:
         return urllib.request.Request(*params)
+
 
 def prepare_query(query, params):
     param_vals = []
@@ -38,12 +43,13 @@ def prepare_query(query, params):
         start = query.find('$%$', start)
         if start == -1: break
         end = query.find('$%$', start + 3)
-        key = query[start+3:end]
+        key = query[start + 3:end]
         if key not in params:
             raise Exception("key '" + key + "' from SQL not found in input parameters")
         param_vals.append(params[key])
         query = query[:start] + '?' + query[end + 3:]
     return query, param_vals
+
 
 def execute_pull_query(api, conn, query, params, columns):
     cursor = conn.cursor()
@@ -67,13 +73,20 @@ def execute_pull_query(api, conn, query, params, columns):
             data.append(record)
 
         batch_count += 1
-        printme("saving batch " + str(batch_count),"")
-        printme(" records " + str(updated+1) + " - " + str(batch_size + updated))
+        printme("saving batch " + str(batch_count), "")
+        printme(" records " + str(updated + 1) + " - " + str(batch_size + updated))
         result = api.set_residents(columns, data, params)
         updated += result['updated']
         if len(data) < batch_size: break
 
     return updated
+
+
+class NestedDict(dict):
+    def __getitem__(self, key):
+        if key in self: return self.get(key)
+        return self.setdefault(key, NestedDict())
+
 
 class API:
 
@@ -103,6 +116,12 @@ class API:
         req.add_header('Content-Type', 'application/json')
         req.get_method = lambda: 'PUT'
         self.response = urlopen(req)
+        return json.loads(self.response.read().decode('utf8'))
+
+    def get_rooms(self, options):
+        options['token'] = self.token
+        uri = self.uri + '/room?' + urlencode(options)
+        self.response = urlopen(uri)
         return json.loads(self.response.read().decode('utf8'))
 
     def get_instances(self, active=True):
