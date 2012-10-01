@@ -82,7 +82,7 @@ UPDATE SESS_ROOM_MASTER
 SET ROOM_CAPACITY = $%$capacity$%$,
     NUM_RESIDENTS = $%$num_residents$%$,
     NUM_VACANCIES = $%$num_vacancies$%$,
-    ROOM_STS = $%$room_sts$$%$,
+    ROOM_STS = $%$room_sts$%$,
     OCCUPANT_GENDER = $%$occupant_gender$%$,
     ROOM_TYPE = $%$ROOM_TYPE$%$,
     JOB_TIME = GETDATE(),
