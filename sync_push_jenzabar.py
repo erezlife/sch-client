@@ -110,7 +110,7 @@ AND BLDG_CDE = $%$BLDG_CDE$%$
 
 stud_roommates_delete = """
 DELETE FROM STUD_ROOMMATES
-WHERE SESS_CDE = $%$SESS_CDE$%$
+WHERE SESS_CDE = %s
 AND BLDG_LOC_CDE IN %s
 AND BLDG_CDE IN %s
 """
@@ -243,7 +243,7 @@ for instance in instances:
     params = copy(instance)
     bldg_loc_param = tuple("'" + x + "'" for x in bldg_loc_set)
     bldg_param = tuple("'" + x + "'" for x in bldg_set)
-    query_string = stud_roommates_delete % (bldg_loc_param, bldg_param)
+    query_string = stud_roommates_delete % (params['SESS_CDE'], bldg_loc_param, bldg_param)
     query, query_params = sch_client.prepare_query(query_string, params)
     cursor.execute(query, *query_params)
 
