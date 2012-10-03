@@ -154,6 +154,7 @@ for instance in instances:
 
         params = copy(instance)
         params.update(room)
+        params['ROOM_TYPE'] = params['ROOM_TYPE'] if 'ROOM_TYPE' in params else None
         params['occupant_gender'] = params['gender'] if params['gender'] else 'I'
         params['num_vacancies'] = room['capacity'] - room['num_residents']
         if room['num_residents'] == room['capacity']:
