@@ -5,6 +5,7 @@ import json
 import pyodbc
 import os
 from collections import defaultdict
+from copy import copy
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 config = json.load(open(os.path.join(__location__, 'config.json')))
@@ -151,7 +152,7 @@ for instance in instances:
         halls[room['BLDG_LOC_CDE']][room['BLDG_CDE']]['capacity'] += room['capacity']
         halls[room['BLDG_LOC_CDE']][room['BLDG_CDE']]['num_residents'] += room['num_residents']
 
-        params = instance
+        params = copy(instance)
         params.update(room)
         params['occupant_gender'] = params['gender'] if params['gender'] else 'I'
         params['num_vacancies'] = room['capacity'] - room['num_residents']
@@ -180,7 +181,7 @@ for instance in instances:
 
     # clear all ROOM_ASSIGN data that exists in SCH
     for room_tuple in room_set:
-        params = instance
+        params = copy(instance)
         params['BLDG_LOC_CDE'] = room_tuple[0]
         params['BLDG_CDE'] = room_tuple[1]
         params['ROOM_CDE'] = room_tuple[2]
@@ -191,7 +192,7 @@ for instance in instances:
     residents = api.get_residents(instance)
     sch_client.printme("Total Residents: " + str(len(residents)))
     for resident in residents:
-        params = instance
+        params = copy(instance)
         params['id'] = resident['id']
 
         if resident['meal_plan']:
@@ -238,7 +239,7 @@ for instance in instances:
             res_null_count += cursor.execute(query, *query_params).rowcount
 
     # delete old roommates for bldg_loc and bldg codes we know
-    params = instance
+    params = copy(instance)
     bldg_loc_param = tuple("'" + x + "'" for x in bldg_loc_set)
     bldg_param = tuple("'" + x + "'" for x in bldg_set)
     query_string = stud_roommates_delete % (bldg_loc_param, bldg_param)
