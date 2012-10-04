@@ -44,7 +44,7 @@ AND ROOM_CDE = $%$ROOM_CDE$%$"""
 room_assign_insert = """
 INSERT INTO ROOM_ASSIGN (
     SESS_CDE,
-    BLDG_LOG_CDE,
+    BLDG_LOC_CDE,
     BLDG_CDE,
     ROOM_CDE,
     ROOM_SLOT_NUM,
@@ -57,7 +57,7 @@ INSERT INTO ROOM_ASSIGN (
 )
 VALUES (
     $%$SESS_CDE$%$,
-    $%$BLDG_LOG_CDE$%$,
+    $%$BLDG_LOC_CDE$%$,
     $%$BLDG_CDE$%$,
     $%$ROOM_CDE$%$,
     $%$slot$%$,
