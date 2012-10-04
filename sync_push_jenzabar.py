@@ -8,6 +8,7 @@ from collections import defaultdict
 from copy import copy
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+sch_client.initLogging(__location__, 'sync_push_jenzabar')
 config = json.load(open(os.path.join(__location__, 'config.json')))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 connection = pyodbc.connect(config['db_connection'])

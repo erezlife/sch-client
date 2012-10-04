@@ -3,6 +3,7 @@
 import urllib
 import json
 import sys
+import logging
 
 if sys.version_info < (3, 0):
     import urllib2
@@ -10,9 +11,27 @@ else:
     import urllib.request
     import urllib.parse
 
+# Global Logger
+logger = None
+
+
+def log_handler(type, value, tb):
+    logger.exception("Uncaught exception: {0}".format(str(value)))
+
+
+def initLogging(dir, name):
+    logger = logging.getLogger(name)
+    hdlr = logging.FileHandler(dir + '/' + name + '.log')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr)
+    sys.excepthook = log_handler
+
 
 def printme(s="", end="\n"):
     sys.stdout.write(str(s) + end)
+    if logger:
+        logger.info(str(s) + end)
 
 
 def urlopen(req):
