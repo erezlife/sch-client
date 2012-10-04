@@ -433,6 +433,7 @@ for instance in instances:
                 query, query_params = sch_client.prepare_query(stud_sess_assign_update_meal, params)
 
             rowcount = cursor.execute(query, *query_params).rowcount
+            stud_sess_assign_count_update += rowcount
 
             if rowcount == 0:
                 if resident_exists(params['id']):
