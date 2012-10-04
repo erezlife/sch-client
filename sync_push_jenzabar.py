@@ -390,7 +390,7 @@ for instance in instances:
                 sch_client.printme(json.dumps(resident['residency']))
             params.update(resident['residency'])
             query, query_params = sch_client.prepare_query(room_assign_update, params)
-            rowcount += cursor.execute(query, *query_params).rowcount
+            rowcount = cursor.execute(query, *query_params).rowcount
             if rowcount > 0:
                 room_assign_count_update += rowcount
             else:
@@ -403,7 +403,7 @@ for instance in instances:
             params['ROOM_ASSIGN_STS'] = 'A'
             params['RESID_COMMUTER_STS'] = 'R'
             query, query_params = sch_client.prepare_query(stud_sess_assign_update, params)
-            rowcount += cursor.execute(query, *query_params).rowcount
+            rowcount = cursor.execute(query, *query_params).rowcount
             if rowcount > 0:
                 stud_sess_assign_count_update += rowcount
             else:
@@ -432,7 +432,7 @@ for instance in instances:
             else:
                 query, query_params = sch_client.prepare_query(stud_sess_assign_update_meal, params)
 
-            rowcount += cursor.execute(query, *query_params).rowcount
+            rowcount = cursor.execute(query, *query_params).rowcount
 
             if rowcount == 0:
                 if resident_exists(params['id']):
