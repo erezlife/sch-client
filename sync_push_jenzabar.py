@@ -110,9 +110,11 @@ AND BLDG_CDE = $%$BLDG_CDE$%$
 
 stud_roommates_delete = """
 DELETE FROM STUD_ROOMMATES
-WHERE SESS_CDE = $%$SESS_CDE$%$
-AND BLDG_LOC_CDE IN ($%$bldg_loc_cdes$%$)
-AND BLDG_CDE IN ($%$bldg_cdes$%$)
+WHERE SESS_CDE = '%s'
+AND (
+    BLDG_LOC_CDE IN (%s) AND BLDG_CDE IN (%s)
+    OR ID_NUM IN (%s)
+)
 """
 
 stud_roommates_insert = """
@@ -240,11 +242,11 @@ for instance in instances:
             res_null_count += cursor.execute(query, *query_params).rowcount
 
     # delete old roommates for bldg_loc and bldg codes we know
-    params = copy(instance)
-    params['bldg_loc_cdes'] = ','.join(map(lambda w: "'" + w + "'", bldg_loc_set))
-    params['bldg_cdes'] = ','.join(map(lambda w: "'" + w + "'", bldg_set))
-    query, query_params = sch_client.prepare_query(stud_roommates_delete, params)
-    cursor.execute(query, *query_params)
+    bldg_loc_cdes = ','.join(map(lambda w: "'" + w + "'", bldg_loc_set))
+    bldg_cdes = ','.join(map(lambda w: "'" + w + "'", bldg_set))
+    res_ids = ','.join(map(lambda r: r['id'], filter(lambda r: r['residency'], residents)))
+    query = stud_roommates_delete % (instance['SESS_CDE'], bldg_loc_cdes, bldg_cdes, res_ids)
+    cursor.execute(query)
 
     # insert new roommates
     for bldg_loc_cde in room_occupants:
