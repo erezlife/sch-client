@@ -104,7 +104,7 @@ INSERT INTO STUD_SESS_ASSIGN (
 )
 VALUES (
     $%$SESS_CDE$%$,
-    $%$ID_NUM$%$,
+    $%$id$%$,
     $%$MEAL_PLAN$%$,
     $%$ROOM_ASSIGN_STS$%$,
     $%$RESID_COMMUTER_STS$%$,
