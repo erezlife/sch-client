@@ -26,13 +26,12 @@ def initLogging(dir, name):
     logger.addHandler(hdlr)
     logger.setLevel(logging.INFO)
     sys.excepthook = log_handler
-    logger.info('logging initialized')
 
 
 def printme(s="", end="\n"):
     sys.stdout.write(str(s) + end)
     if logger:
-        logger.info(str(s) + end)
+        logger.info(str(s) + end.rstrip())
 
 
 def urlopen(req):
