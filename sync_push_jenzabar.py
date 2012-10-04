@@ -471,21 +471,21 @@ for instance in instances:
     sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count_update + res_null_count), " ")
     sch_client.printme("(" + str(room_assign_count_update) + " placed, " + str(res_null_count) + " unplaced)")
 
-    sch_client.printme("SESS_BLDG_MASTER updates: " + str(sess_bldg_master_count_update) + " new inserts: " + str(sess_bldg_master_count_insert) + " missing:" + str(len(building_master_missing)))
+    sch_client.printme("SESS_BLDG_MASTER updates: " + str(sess_bldg_master_count_update) + " new-inserts: " + str(sess_bldg_master_count_insert) + " missing: " + str(len(building_master_missing)))
     if(len(building_master_missing) > 0):
         sch_client.printme("BUILDING_MASTER records not found:")
         for record in building_master_missing:
             sch_client.printme(" " + record)
-    sch_client.printme("SESS_ROOM_MASTER updates: " + str(sess_room_master_count_update) + " new inserts: " + str(sess_room_master_count_insert) + " missing: " + str(len(room_master_missing)))
+    sch_client.printme("SESS_ROOM_MASTER updates: " + str(sess_room_master_count_update) + " new-inserts: " + str(sess_room_master_count_insert) + " missing: " + str(len(room_master_missing)))
 
     if(len(room_master_missing) > 0):
         sch_client.printme("ROOM_MASTER records not found:")
         for record in room_master_missing:
             sch_client.printme(" " + record[0] + " " + record[1] + " " + record[2])
 
-    sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count_update) + " new inserts: " + str(room_assign_count_insert))
+    sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count_update) + " new-inserts: " + str(room_assign_count_insert))
 
-    sch_client.printme("STUD_SESS_ASSIGN updates: " + str(stud_sess_assign_count_update) + " new inserts: " + str(stud_sess_assign_count_insert) + " missing: " + str(len(resident_missing)))
+    sch_client.printme("STUD_SESS_ASSIGN updates: " + str(stud_sess_assign_count_update) + " new-inserts: " + str(stud_sess_assign_count_insert) + " missing: " + str(len(resident_missing)))
     if(len(resident_missing) > 0):
         sch_client.printme("NAME_MASTER records not found:")
         for record in resident_missing:
