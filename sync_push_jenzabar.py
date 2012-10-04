@@ -331,8 +331,8 @@ for instance in instances:
                     building_master_missing.add(params['BLDG_CDE'])
                 else:  # insert building into session
                     query, query_params = sch_client.prepare_query(sess_bldg_master_insert, params)
-                    rowcount = cursor.execute(query, *query_params).rowcount
-                    sess_bldg_master_count_insert += rowcount
+                    cursor.execute(query, *query_params)
+                    sess_bldg_master_count_insert += 1
 
             if rowcount > 0:  # building found in session
                 query, query_params = sch_client.prepare_query(room_master_select, params)
@@ -340,11 +340,9 @@ for instance in instances:
                 if rowcount == 0:  # room not in the session
                     room_master_missing.add((params['BLDG_LOC_CDE'], params['BLDG_CDE'], params['ROOM_CDE']))
                 else:  # insert room into session
-                    query, query_params = sch_client.prepare_query(sess_bldg_master_insert, params)
-                    sess_room_master_count_insert = cursor.execute(query, *query_params).rowcount
-
-            query, query_params = sch_client.prepare_query(sess_room_master_insert, params)
-            sess_room_master_count_insert += cursor.execute(query, *query_params).rowcount
+                    query, query_params = sch_client.prepare_query(sess_room_master_insert, params)
+                    cursor.execute(query, *query_params)
+                    sess_room_master_count_insert += 1
 
     # save hall data to SESS_BLDG_MASTER
     for bldg_loc_cde in halls:
@@ -397,7 +395,8 @@ for instance in instances:
                 room_assign_count_update += rowcount
             else:
                 query, query_params = sch_client.prepare_query(room_assign_insert, params)
-                room_assign_count_insert += cursor.execute(query, *query_params).rowcount
+                cursor.execute(query, *query_params)
+                room_assign_count_insert += 1
 
             if verbose:
                 sch_client.printme("Updating STUD_SESS_ASSIGN for " + params['id'])
@@ -410,7 +409,8 @@ for instance in instances:
             else:
                 if resident_exists(params['id']):
                     query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
-                    stud_sess_assign_count_insert += cursor.execute(query, *query_params).rowcount
+                    cursor.execute(query, *query_params)
+                    stud_sess_assign_count_insert += 1
                 else:  # resident doesn't exist in master table
                     resident_missing.add(params['id'])
 
@@ -437,7 +437,8 @@ for instance in instances:
             if rowcount == 0:
                 if resident_exists(params['id']):
                     query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
-                    stud_sess_assign_count_insert += cursor.execute(query, *query_params).rowcount
+                    cursor.execute(query, *query_params)
+                    stud_sess_assign_count_insert += 1
                 else:  # resident doesn't exist in master table
                     resident_missing.add(params['id'])
 
@@ -470,12 +471,12 @@ for instance in instances:
     sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count_update + res_null_count), " ")
     sch_client.printme("(" + str(room_assign_count_update) + " placed, " + str(res_null_count) + " unplaced)")
 
-    sch_client.printme("SESS_BLDG_MASTER updates: " + str(sess_bldg_master_count_update) + " new inserts: " + str(sess_bldg_master_count_insert + " missing:" + len(building_master_missing)))
+    sch_client.printme("SESS_BLDG_MASTER updates: " + str(sess_bldg_master_count_update) + " new inserts: " + str(sess_bldg_master_count_insert) + " missing:" + str(len(building_master_missing)))
     if(len(building_master_missing) > 0):
         sch_client.printme("BUILDING_MASTER records not found:")
         for record in building_master_missing:
             sch_client.printme(" " + record)
-    sch_client.printme("SESS_ROOM_MASTER updates: " + str(sess_room_master_count_update) + " new inserts: " + str(sess_room_master_count_insert) + " missing: " + len(room_master_missing))
+    sch_client.printme("SESS_ROOM_MASTER updates: " + str(sess_room_master_count_update) + " new inserts: " + str(sess_room_master_count_insert) + " missing: " + str(len(room_master_missing)))
 
     if(len(room_master_missing) > 0):
         sch_client.printme("ROOM_MASTER records not found:")
@@ -484,7 +485,7 @@ for instance in instances:
 
     sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count_update) + " new inserts: " + str(room_assign_count_insert))
 
-    sch_client.printme("STUD_SESS_ASSIGN updates: " + str(stud_sess_assign_count_update) + " new inserts: " + str(stud_sess_assign_count_insert) + " missing: " + len(resident_missing))
+    sch_client.printme("STUD_SESS_ASSIGN updates: " + str(stud_sess_assign_count_update) + " new inserts: " + str(stud_sess_assign_count_insert) + " missing: " + str(len(resident_missing)))
     if(len(resident_missing) > 0):
         sch_client.printme("NAME_MASTER records not found:")
         for record in resident_missing:
