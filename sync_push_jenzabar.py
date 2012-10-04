@@ -41,13 +41,33 @@ AND BLDG_LOC_CDE = $%$BLDG_LOC_CDE$%$
 AND BLDG_CDE = $%$BLDG_CDE$%$
 AND ROOM_CDE = $%$ROOM_CDE$%$"""
 
-room_assign_select = """
-SELECT  BLDG_LOC_CDE,
-        BLDG_CDE,
-        ROOM_CDE
-FROM    ROOM_ASSIGN
-WHERE SESS_CDE = $%$SESS_CDE$%$
-AND ID_NUM = $%$id$%$
+room_assign_insert = """
+INSERT INTO ROOM_ASSIGN (
+    SESS_CDE,
+    BLDG_LOG_CDE,
+    BLDG_CDE,
+    ROOM_CDE,
+    ROOM_SLOT_NUM,
+    ID_NUM,
+    ASSIGN_DTE,
+    JOB_TIME,
+    JOB_NAME,
+    USER_NAME,
+    ROOM_ASSIGN_STS
+)
+VALUES (
+    $%$SESS_CDE$%$,
+    $%$BLDG_LOG_CDE$%$,
+    $%$BLDG_CDE$%$,
+    $%$ROOM_CDE$%$,
+    $%$slot$%$,
+    $%$id$%$,
+    $%$assign_time$%$,
+    GETDATE(),
+    'sch.import_residency',
+    'SCH',
+    'A'
+)
 """
 
 stud_sess_assign_update = """
@@ -70,6 +90,29 @@ SET MEAL_PLAN = $%$MEAL_PLAN$%$,
     USER_NAME = 'SCH'
 WHERE SESS_CDE = $%$SESS_CDE$%$
 AND ID_NUM = $%$id$%$"""
+
+stud_sess_assign_insert = """
+INSERT INTO STUD_SESS_ASSIGN (
+    SESS_CDE,
+    ID_NUM,
+    MEAL_PLAN,
+    ROOM_ASSIGN_STS,
+    RESID_COMMUTER_STS,
+    JOB_TIME,
+    JOB_NAME,
+    USER_NAME
+)
+VALUES (
+    $%$SESS_CDE$%$,
+    $%$ID_NUM$%$,
+    $%$MEAL_PLAN$%$,
+    $%$ROOM_ASSIGN_STS$%$,
+    $%$RESID_COMMUTER_STS$%$,
+    GETDATE(),
+    'sch.import_residency',
+    'SCH'
+)
+"""
 
 stud_sess_assign_select = """
 SELECT ROOM_ASSIGN_STS, RESID_COMMUTER_STS
@@ -95,6 +138,39 @@ AND BLDG_CDE = $%$BLDG_CDE$%$
 AND ROOM_CDE = $%$ROOM_CDE$%$
 """
 
+sess_room_master_insert = """
+INSERT INTO SESS_ROOM_MASTER (
+    SESS_CDE,
+    BLDG_LOC_CDE,
+    BLDG_CDE,
+    ROOM_CDE,
+    ROOM_CAPACITY,
+    NUM_RESIDENTS,
+    NUM_VACANCIES,
+    ROOM_STS,
+    OCCUPANT_GENDER,
+    ROOM_TYPE,
+    JOB_TIME,
+    JOB_NAME,
+    USER_NAME
+)
+VALUES (
+    $%$SESS_CDE$%$,
+    $%$BLDG_LOC_CDE$%$,
+    $%$BLDG_CDE$%$,
+    $%$ROOM_CDE$%$,
+    $%$capacity$%$,
+    $%$num_residents$%$,
+    $%$num_vacancies$%$,
+    $%$room_sts$%$,
+    $%$occupant_gender$%$,
+    $%$ROOM_TYPE$%$,
+    GETDATE(),
+    'sch.import_residency',
+    'SCH'
+)
+"""
+
 sess_bldg_master_update = """
 UPDATE SESS_BLDG_MASTER
 SET SESS_BLDG_CAP = $%$capacity$%$,
@@ -118,16 +194,41 @@ AND (
 """
 
 stud_roommates_insert = """
-INSERT INTO STUD_ROOMMATES (SESS_CDE, ID_NUM, REQ_ACTUAL_FLAG, ROOMMATE_ID, BLDG_LOC_CDE, BLDG_CDE, ROOM_CDE, USER_NAME, JOB_NAME, JOB_TIME)
-VALUES ($%$SESS_CDE$%$, $%$id$%$, 'A', $%$roommate_id$%$, $%$BLDG_LOC_CDE$%$, $%$BLDG_CDE$%$, $%$ROOM_CDE$%$, 'SCH', 'sch.import_residency', GETDATE());
+INSERT INTO STUD_ROOMMATES (
+    SESS_CDE,
+    ID_NUM,
+    REQ_ACTUAL_FLAG,
+    ROOMMATE_ID,
+    BLDG_LOC_CDE,
+    BLDG_CDE,
+    ROOM_CDE,
+    USER_NAME,
+    JOB_NAME,
+    JOB_TIME
+)
+VALUES (
+    $%$SESS_CDE$%$,
+    $%$id$%$,
+    'A',
+    $%$roommate_id$%$,
+    $%$BLDG_LOC_CDE$%$,
+    $%$BLDG_CDE$%$,
+    $%$ROOM_CDE$%$,
+    'SCH',
+    'sch.import_residency',
+    GETDATE()
+)
 """
 
 room_assign_count = 0
+room_assign_count_insert = 0
 stud_sess_assign_count = 0
+stud_sess_assign_count_insert = 0
 sess_room_master_count = 0
+sess_room_master_count_insert = 0
 sess_bldg_master_count = 0
+sess_bldg_master_count_missing = 0
 res_null_count = 0
-meal_update_count = 0
 room_occupants = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 instances = api.get_instances()
 
@@ -167,7 +268,12 @@ for instance in instances:
             params['room_sts'] = 'P'
 
         query, query_params = sch_client.prepare_query(sess_room_master_update, params)
-        sess_room_master_count += cursor.execute(query, *query_params).rowcount
+        rowcount = cursor.execute(query, *query_params).rowcount
+        if rowcount > 0:
+            sess_room_master_count += rowcount
+        else:
+            query, query_params = sch_client.prepare_query(sess_room_master_insert, params)
+            sess_room_master_count_insert += cursor.execute(query, *query_params).rowcount
 
     # save hall data to SESS_BLDG_MASTER
     for bldg_loc_cde in halls:
@@ -180,7 +286,11 @@ for instance in instances:
             params.update(instance)
             params['num_vacancies'] = params['capacity'] - params['num_residents']
             query, query_params = sch_client.prepare_query(sess_bldg_master_update, params)
-            sess_bldg_master_count += cursor.execute(query, *query_params).rowcount
+            rowcount += cursor.execute(query, *query_params).rowcount
+            if rowcount > 0:
+                sess_bldg_master_count += rowcount
+            else:
+                sess_bldg_master_count_missing += rowcount
 
     # clear all ROOM_ASSIGN data that exists in SCH
     for room_tuple in room_set:
@@ -189,7 +299,7 @@ for instance in instances:
         params['BLDG_CDE'] = room_tuple[1]
         params['ROOM_CDE'] = room_tuple[2]
         query, query_params = sch_client.prepare_query(room_assign_clear, params)
-        sess_bldg_master_count += cursor.execute(query, *query_params).rowcount
+        cursor.execute(query, *query_params)
 
     # update ROOM_ASSIGN and STUD_SESS_ASSIGN data for all residents in SCH
     residents = api.get_residents(instance)
@@ -215,14 +325,24 @@ for instance in instances:
                 sch_client.printme(json.dumps(resident['residency']))
             params.update(resident['residency'])
             query, query_params = sch_client.prepare_query(room_assign_update, params)
-            room_assign_count += cursor.execute(query, *query_params).rowcount
+            rowcount += cursor.execute(query, *query_params).rowcount
+            if rowcount > 0:
+                room_assign_count += rowcount
+            else:
+                query, query_params = sch_client.prepare_query(room_assign_insert, params)
+                room_assign_count_insert += cursor.execute(query, *query_params).rowcount
 
             if verbose:
                 sch_client.printme("Updating STUD_SESS_ASSIGN for " + params['id'])
             params['ROOM_ASSIGN_STS'] = 'A'
             params['RESID_COMMUTER_STS'] = 'R'
             query, query_params = sch_client.prepare_query(stud_sess_assign_update, params)
-            stud_sess_assign_count += cursor.execute(query, *query_params).rowcount
+            rowcount += cursor.execute(query, *query_params).rowcount
+            if rowcount > 0:
+                stud_sess_assign_count += rowcount
+            else:
+                query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
+                stud_sess_assign_count_insert += cursor.execute(query, *query_params).rowcount
         else:
             # do not override students in halls/rooms we do not track
             if verbose:
@@ -232,14 +352,22 @@ for instance in instances:
             cursor.execute(query, *query_params)
             stud_row = cursor.fetchone()
 
+            params['ROOM_ASSIGN_STS'] = 'U'
+            params['RESID_COMMUTER_STS'] = None
+
             # set room_assign_sts to unset if resident previously marked as a resident, otherwise only set meal_plan
             if stud_row and stud_row.RESID_COMMUTER_STS == 'R':
-                params['ROOM_ASSIGN_STS'] = 'U'
-                params['RESID_COMMUTER_STS'] = None
                 query, query_params = sch_client.prepare_query(stud_sess_assign_update, params)
             else:
                 query, query_params = sch_client.prepare_query(stud_sess_assign_update_meal, params)
-            res_null_count += cursor.execute(query, *query_params).rowcount
+
+            rowcount += cursor.execute(query, *query_params).rowcount
+
+            if rowcount == 0:
+                query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
+                stud_sess_assign_count_insert += cursor.execute(query, *query_params).rowcount
+
+            res_null_count += rowcount
 
     # delete old roommates for bldg_loc and bldg codes we know
     bldg_loc_cdes = ','.join(map(lambda w: "'" + w + "'", bldg_loc_set))
@@ -267,6 +395,11 @@ for instance in instances:
     connection.commit()
     sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count + res_null_count), " ")
     sch_client.printme("(" + str(room_assign_count) + " placed, " + str(res_null_count) + " unplaced)")
+    sch_client.printme("SESS_BLDG_MASTER updates: " + str(sess_bldg_master_count), " not found: " + str(sess_bldg_master_count_missing))
+    sch_client.printme("SESS_ROOM_MASTER updates: " + str(sess_room_master_count), " new inserts: " + str(sess_room_master_count_insert))
+    sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count), " new inserts: " + str(room_assign_count_insert))
+    sch_client.printme("STUD_SESS_ASSIGN updates: " + str(stud_sess_assign_count), " new inserts: " + str(stud_sess_assign_count_insert))
+    sch_client.printme("Residents with NULL housing: " + str(res_null_count))
 #    sch_client.printme("Record(s) not found: " + str(len(residents) - res_update_count - res_null_count))
 
 connection.close()
