@@ -184,6 +184,46 @@ AND BLDG_LOC_CDE = $%$BLDG_LOC_CDE$%$
 AND BLDG_CDE = $%$BLDG_CDE$%$
 """
 
+sess_bldg_master_insert = """
+INSERT INTO SESS_BLDG_MASTER (
+    SESS_CDE,
+    BLDG_LOC_CDE,
+    BLDG_CDE,
+    SESS_BLDG_CAP,
+    NUM_RESIDENTS,
+    NUM_VACANCIES,
+    JOB_TIME,
+    JOB_NAME,
+    USER_NAME
+)
+VALUES (
+    $%$SESS_CDE$%$,
+    $%$BLDG_LOC_CDE$%$,
+    $%$BLDG_CDE$%$,
+    $%$capacity$%$,
+    $%$num_residents$%$,
+    $%$num_vacancies$%$,
+    GETDATE(),
+    'sch.import_residency',
+    'SCH'
+)
+"""
+
+sess_bldg_master_select = """
+SELECT * FROM SESS_BLDG_MASTER WHERE SESS_CDE = $%$SESS_CDE$%$ AND BLDG_LOC_CDE = $%$BLDG_LOC_CDE$%$ AND BLDG_CDE = $%$BLDG_CDE$%$
+"""
+
+building_master_select = """
+SELECT * FROM BUILDING_MASTER WHERE BLDG_CDE = $%$BLDG_CDE$%$
+"""
+
+name_master_select = """
+SELECT * FROM NAME_MASTER WHERE ID_NUM = $%$id$%$
+"""
+
+room_master_select = """
+SELECT * FROM ROOM_MASTER WHERE LOC_CDE = $%$BLDG_LOC_CDE$%$ AND BLDG_CDE = $%$BLDG_CDE$%$ AND ROOM_CDE = $%$ROOM_CDE$%$
+"""
 stud_roommates_delete = """
 DELETE FROM STUD_ROOMMATES
 WHERE SESS_CDE = '%s'
@@ -220,14 +260,23 @@ VALUES (
 )
 """
 
-room_assign_count = 0
+
+def resident_exists(id):
+    query, query_params = sch_client.prepare_query(name_master_select, {"id": id})
+    rowcount = cursor.execute(query, *query_params).rowcount
+    return rowcount > 0
+
+room_assign_count_update = 0
 room_assign_count_insert = 0
-stud_sess_assign_count = 0
+stud_sess_assign_count_update = 0
 stud_sess_assign_count_insert = 0
-sess_room_master_count = 0
+sess_room_master_count_update = 0
 sess_room_master_count_insert = 0
-sess_bldg_master_count = 0
-sess_bldg_master_count_missing = 0
+sess_bldg_master_count_update = 0
+sess_bldg_master_count_insert = 0
+building_master_missing = set()
+room_master_missing = set()
+resident_missing = set()
 res_null_count = 0
 room_occupants = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 instances = api.get_instances()
@@ -270,8 +319,30 @@ for instance in instances:
         query, query_params = sch_client.prepare_query(sess_room_master_update, params)
         rowcount = cursor.execute(query, *query_params).rowcount
         if rowcount > 0:
-            sess_room_master_count += rowcount
+            sess_room_master_count_update += rowcount
         else:
+            query, query_params = sch_client.prepare_query(sess_bldg_master_select, params)
+            rowcount = cursor.execute(query, *query_params)
+            if rowcount == 0:  # building not in the session
+                # check to make sure it exist in master lookup
+                query, query_params = sch_client.prepare_query(building_master_select, params)
+                rowcount = cursor.execute(query, *query_params)
+                if rowcount == 0:  # building not in master lookup table
+                    building_master_missing.add(params['BLDG_CDE'])
+                else:  # insert building into session
+                    query, query_params = sch_client.prepare_query(sess_bldg_master_insert, params)
+                    rowcount = cursor.execute(query, *query_params).rowcount
+                    sess_bldg_master_count_insert += rowcount
+
+            if rowcount > 0:  # building found in session
+                query, query_params = sch_client.prepare_query(room_master_select, params)
+                rowcount = cursor.execute(query, *query_params)
+                if rowcount == 0:  # room not in the session
+                    room_master_missing.add((params['BLDG_LOC_CDE'], params['BLDG_CDE'], params['ROOM_CDE']))
+                else:  # insert room into session
+                    query, query_params = sch_client.prepare_query(sess_bldg_master_insert, params)
+                    sess_room_master_count_insert = cursor.execute(query, *query_params).rowcount
+
             query, query_params = sch_client.prepare_query(sess_room_master_insert, params)
             sess_room_master_count_insert += cursor.execute(query, *query_params).rowcount
 
@@ -286,11 +357,7 @@ for instance in instances:
             params.update(instance)
             params['num_vacancies'] = params['capacity'] - params['num_residents']
             query, query_params = sch_client.prepare_query(sess_bldg_master_update, params)
-            rowcount += cursor.execute(query, *query_params).rowcount
-            if rowcount > 0:
-                sess_bldg_master_count += rowcount
-            else:
-                sess_bldg_master_count_missing += rowcount
+            sess_bldg_master_count_update += cursor.execute(query, *query_params).rowcount
 
     # clear all ROOM_ASSIGN data that exists in SCH
     for room_tuple in room_set:
@@ -327,7 +394,7 @@ for instance in instances:
             query, query_params = sch_client.prepare_query(room_assign_update, params)
             rowcount += cursor.execute(query, *query_params).rowcount
             if rowcount > 0:
-                room_assign_count += rowcount
+                room_assign_count_update += rowcount
             else:
                 query, query_params = sch_client.prepare_query(room_assign_insert, params)
                 room_assign_count_insert += cursor.execute(query, *query_params).rowcount
@@ -339,10 +406,14 @@ for instance in instances:
             query, query_params = sch_client.prepare_query(stud_sess_assign_update, params)
             rowcount += cursor.execute(query, *query_params).rowcount
             if rowcount > 0:
-                stud_sess_assign_count += rowcount
+                stud_sess_assign_count_update += rowcount
             else:
-                query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
-                stud_sess_assign_count_insert += cursor.execute(query, *query_params).rowcount
+                if resident_exists(params['id']):
+                    query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
+                    stud_sess_assign_count_insert += cursor.execute(query, *query_params).rowcount
+                else:  # resident doesn't exist in master table
+                    resident_missing.add(params['id'])
+
         else:
             # do not override students in halls/rooms we do not track
             if verbose:
@@ -364,8 +435,11 @@ for instance in instances:
             rowcount += cursor.execute(query, *query_params).rowcount
 
             if rowcount == 0:
-                query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
-                stud_sess_assign_count_insert += cursor.execute(query, *query_params).rowcount
+                if resident_exists(params['id']):
+                    query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
+                    stud_sess_assign_count_insert += cursor.execute(query, *query_params).rowcount
+                else:  # resident doesn't exist in master table
+                    resident_missing.add(params['id'])
 
             res_null_count += rowcount
 
@@ -393,13 +467,29 @@ for instance in instances:
                             cursor.execute(query, *query_params)
 
     connection.commit()
-    sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count + res_null_count), " ")
-    sch_client.printme("(" + str(room_assign_count) + " placed, " + str(res_null_count) + " unplaced)")
-    sch_client.printme("SESS_BLDG_MASTER updates: " + str(sess_bldg_master_count), " not found: " + str(sess_bldg_master_count_missing))
-    sch_client.printme("SESS_ROOM_MASTER updates: " + str(sess_room_master_count), " new inserts: " + str(sess_room_master_count_insert))
-    sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count), " new inserts: " + str(room_assign_count_insert))
-    sch_client.printme("STUD_SESS_ASSIGN updates: " + str(stud_sess_assign_count), " new inserts: " + str(stud_sess_assign_count_insert))
+    sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count_update + res_null_count), " ")
+    sch_client.printme("(" + str(room_assign_count_update) + " placed, " + str(res_null_count) + " unplaced)")
+
+    sch_client.printme("SESS_BLDG_MASTER updates: " + str(sess_bldg_master_count_update) + " new inserts: " + str(sess_bldg_master_count_insert + " missing:" + len(building_master_missing)))
+    if(len(building_master_missing) > 0):
+        sch_client.printme("BUILDING_MASTER records not found:")
+        for record in building_master_missing:
+            sch_client.printme(" " + record)
+    sch_client.printme("SESS_ROOM_MASTER updates: " + str(sess_room_master_count_update) + " new inserts: " + str(sess_room_master_count_insert) + " missing: " + len(room_master_missing))
+
+    if(len(room_master_missing) > 0):
+        sch_client.printme("ROOM_MASTER records not found:")
+        for record in room_master_missing:
+            sch_client.printme(" " + record[0] + " " + record[1] + " " + record[2])
+
+    sch_client.printme("ROOM_ASSIGN updates: " + str(room_assign_count_update) + " new inserts: " + str(room_assign_count_insert))
+
+    sch_client.printme("STUD_SESS_ASSIGN updates: " + str(stud_sess_assign_count_update) + " new inserts: " + str(stud_sess_assign_count_insert) + " missing: " + len(resident_missing))
+    if(len(resident_missing) > 0):
+        sch_client.printme("NAME_MASTER records not found:")
+        for record in resident_missing:
+            sch_client.printme(" " + record)
+
     sch_client.printme("Residents with NULL housing: " + str(res_null_count))
-#    sch_client.printme("Record(s) not found: " + str(len(residents) - res_update_count - res_null_count))
 
 connection.close()
