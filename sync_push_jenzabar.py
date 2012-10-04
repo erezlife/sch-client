@@ -491,6 +491,4 @@ for instance in instances:
         for record in resident_missing:
             sch_client.printme(" " + record)
 
-    sch_client.printme("Residents with NULL housing: " + str(res_null_count))
-
 connection.close()
