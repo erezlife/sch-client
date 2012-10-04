@@ -263,7 +263,7 @@ VALUES (
 
 def resident_exists(id):
     query, query_params = sch_client.prepare_query(name_master_select, {"id": id})
-    rowcount = cursor.execute(query, *query_params).rowcount
+    rowcount = len(cursor.execute(query, *query_params).fetchall())
     return rowcount > 0
 
 room_assign_count_update = 0
@@ -322,11 +322,11 @@ for instance in instances:
             sess_room_master_count_update += rowcount
         else:
             query, query_params = sch_client.prepare_query(sess_bldg_master_select, params)
-            rowcount = cursor.execute(query, *query_params).rowcount
+            rowcount = len(cursor.execute(query, *query_params).fetchall())
             if rowcount == 0:  # building not in the session
                 # check to make sure it exist in master lookup
                 query, query_params = sch_client.prepare_query(building_master_select, params)
-                rowcount = cursor.execute(query, *query_params).rowcount
+                rowcount = len(cursor.execute(query, *query_params).fetchall())
                 if rowcount == 0:  # building not in master lookup table
                     building_master_missing.add(params['BLDG_CDE'])
                 else:  # insert building into session
@@ -336,7 +336,7 @@ for instance in instances:
 
             if rowcount > 0:  # building found in session
                 query, query_params = sch_client.prepare_query(room_master_select, params)
-                rowcount = cursor.execute(query, *query_params).rowcount
+                rowcount = len(cursor.execute(query, *query_params).fetchall())
                 if rowcount == 0:  # room not in the session
                     room_master_missing.add((params['BLDG_LOC_CDE'], params['BLDG_CDE'], params['ROOM_CDE']))
                 else:  # insert room into session
