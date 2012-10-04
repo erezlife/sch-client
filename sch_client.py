@@ -12,7 +12,7 @@ else:
     import urllib.parse
 
 # Global Logger
-logger = None
+logger = logging.getLogger('sch_client')
 
 
 def log_handler(type, value, tb):
@@ -20,12 +20,13 @@ def log_handler(type, value, tb):
 
 
 def initLogging(dir, name):
-    logger = logging.getLogger(name)
     hdlr = logging.FileHandler(dir + '/' + name + '.log')
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     hdlr.setFormatter(formatter)
     logger.addHandler(hdlr)
+    logger.setLevel(logging.INFO)
     sys.excepthook = log_handler
+    logger.info('logging initialized')
 
 
 def printme(s="", end="\n"):

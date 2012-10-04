@@ -9,6 +9,7 @@ from copy import copy
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 sch_client.initLogging(__location__, 'sync_push_jenzabar')
+sch_client.printme('------ Begin sync_push_jenzabar ------')
 config = json.load(open(os.path.join(__location__, 'config.json')))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 connection = pyodbc.connect(config['db_connection'])
@@ -494,3 +495,4 @@ for instance in instances:
             sch_client.printme(" " + record)
 
 connection.close()
+sch_client.printme('------ End sync_push_jenzabar ------')
