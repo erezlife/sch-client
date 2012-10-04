@@ -322,7 +322,7 @@ for instance in instances:
             sess_room_master_count_update += rowcount
         else:
             query, query_params = sch_client.prepare_query(sess_bldg_master_select, params)
-            rowcount = cursor.execute(query, *query_params)
+            rowcount = cursor.execute(query, *query_params).rowcount
             if rowcount == 0:  # building not in the session
                 # check to make sure it exist in master lookup
                 query, query_params = sch_client.prepare_query(building_master_select, params)
