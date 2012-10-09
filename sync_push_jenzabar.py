@@ -395,6 +395,7 @@ for instance in instances:
                 sch_client.printme("Updating ROOM_ASSIGN for " + params['id'], ": ")
                 sch_client.printme(json.dumps(resident['residency']))
             params.update(resident['residency'])
+            params['ROOM_TYPE'] = params['ROOM_TYPE'] if 'ROOM_TYPE' in params else None
             query, query_params = sch_client.prepare_query(room_assign_update, params)
             rowcount = cursor.execute(query, *query_params).rowcount
             if rowcount > 0:
