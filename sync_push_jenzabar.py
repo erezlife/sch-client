@@ -23,7 +23,8 @@ SET ID_NUM = $%$id$%$,
     JOB_TIME = GETDATE(),
     JOB_NAME = 'sch.import_residency',
     USER_NAME = 'SCH',
-    ROOM_ASSIGN_STS = 'A'
+    ROOM_ASSIGN_STS = 'A',
+    ROOM_TYPE = $%$ROOM_TYPE$%$
 WHERE SESS_CDE = $%$SESS_CDE$%$
 AND BLDG_LOC_CDE = $%$BLDG_LOC_CDE$%$
 AND BLDG_CDE = $%$BLDG_CDE$%$
@@ -37,7 +38,8 @@ SET ID_NUM = NULL,
     JOB_TIME = GETDATE(),
     JOB_NAME = 'sch.import_residency',
     USER_NAME = 'SCH',
-    ROOM_ASSIGN_STS = 'U'
+    ROOM_ASSIGN_STS = 'U',
+    ROOM_TYPE = NULL
 WHERE SESS_CDE = $%$SESS_CDE$%$
 AND BLDG_LOC_CDE = $%$BLDG_LOC_CDE$%$
 AND BLDG_CDE = $%$BLDG_CDE$%$
@@ -50,6 +52,7 @@ INSERT INTO ROOM_ASSIGN (
     BLDG_CDE,
     ROOM_CDE,
     ROOM_SLOT_NUM,
+    ROOM_TYPE,
     ID_NUM,
     ASSIGN_DTE,
     JOB_TIME,
@@ -63,6 +66,7 @@ VALUES (
     $%$BLDG_CDE$%$,
     $%$ROOM_CDE$%$,
     $%$slot$%$,
+    $%$ROOM_TYPE$%$,
     $%$id$%$,
     $%$assign_time$%$,
     GETDATE(),
