@@ -4,6 +4,7 @@ import urllib
 import json
 import sys
 import logging
+import traceback
 
 if sys.version_info < (3, 0):
     import urllib2
@@ -16,7 +17,9 @@ logger = logging.getLogger('sch_client')
 
 
 def log_handler(type, value, tb):
-    logger.exception("Uncaught exception: {0}".format(str(value)))
+    # logger.exception("Uncaught exception: {0}".format(str(value)))
+    trace = ''.join(traceback.format_exception(type, value, tb))
+    logger.exception(trace)
 
 
 def initLogging(dir, name):
