@@ -17,7 +17,6 @@ logger = logging.getLogger('sch_client')
 
 
 def log_handler(type, value, tb):
-    # logger.exception("Uncaught exception: {0}".format(str(value)))
     trace = ''.join(traceback.format_exception(type, value, tb))
     logger.exception(trace)
 
