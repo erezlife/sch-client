@@ -5,6 +5,7 @@ import json
 import sys
 import logging
 import traceback
+from copy import copy
 
 if sys.version_info < (3, 0):
     import urllib2
@@ -121,12 +122,14 @@ class API:
         self.auth()
 
     def get_residents(self, options):
+        options = copy(options)
         options['token'] = self.token
         uri = self.uri + '/resident?' + urlencode(options)
         self.response = urlopen(uri)
         return json.loads(self.response.read().decode('utf8'))
 
     def set_residents(self, columns, data, options):
+        options = copy(options)
         options['token'] = self.token
         options['columns'] = columns
         options['data'] = data
@@ -140,6 +143,7 @@ class API:
         return json.loads(self.response.read().decode('utf8'))
 
     def get_rooms(self, options):
+        options = copy(options)
         options['token'] = self.token
         uri = self.uri + '/room?' + urlencode(options)
         self.response = urlopen(uri)
