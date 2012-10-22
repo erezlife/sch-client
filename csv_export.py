@@ -6,7 +6,7 @@ import os
 import csv
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-#sch_client.initLogging(__location__, 'csv_export')
+sch_client.initLogging(__location__, 'csv_export')
 sch_client.printme('------ Begin csv_export ------')
 config = json.load(open(os.path.join(__location__, 'config.json')))
 columns = json.load(open(os.path.join(__location__, config['pull_map'])))
@@ -35,6 +35,10 @@ with open(csvname, 'wb') as csvfile:
             if resident['meal_plan']:
                 for key in resident['meal_plan']:
                     mealplan_columns.add(key)
+
+        # sort for consistency and to place uppercase columns first
+        residency_columns = sorted(residency_columns)
+        mealplan_columns = sorted(mealplan_columns)
 
         # write header
         header = ['id', 'application_time']
