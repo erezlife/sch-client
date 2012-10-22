@@ -41,7 +41,11 @@ with open(csvname, 'wb') as csvfile:
         mealplan_columns = sorted(mealplan_columns)
 
         # write header
-        header = ['id', 'application_time']
+        header = ['id']
+        for key in sorted(instance):
+            header.append(key)
+        header.append('application_time')
+
         for column in residency_columns:
             header.append(column)
         for column in mealplan_columns:
@@ -50,7 +54,11 @@ with open(csvname, 'wb') as csvfile:
 
         # iterate to write data
         for resident in residents:
-            row = [resident['id'], resident['application_time']]
+            row = [resident['id']]
+            for key in sorted(instance):
+                row.append(instance[key])
+            row.append(resident['application_time'])
+
             for key in residency_columns:
                 if resident['residency'] and key in resident['residency']:
                     row.append(resident['residency'][key])
