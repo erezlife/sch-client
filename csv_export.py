@@ -12,7 +12,7 @@ config = json.load(open(os.path.join(__location__, 'config.json')))
 columns = json.load(open(os.path.join(__location__, config['pull_map'])))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 
-csvname = 'export.csv'
+csvname = config['export_csv'] if 'export_csv' in config else 'export.csv'
 with open(csvname, 'wb') as csvfile:
 
     residency_columns = set()

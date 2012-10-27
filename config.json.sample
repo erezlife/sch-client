@@ -5,6 +5,9 @@
 	"db_connection": "DRIVER={SQL Server};SERVER=jenzabardb;DATABASE=production;UID=SCH;PWD=password",
 	"pull_sql": "db/select-resident.jenzabar.sql",
 	"pull_map": "db/select-resident.jenzabar.json",
+	"import_csv": "import.csv",
+	"import_map": "import.csv.json",
+	"export_csv": "export.csv",
 	"powercampus": {
 		"push_params": {
 			"ACADEMIC_SESSION": "REG"
