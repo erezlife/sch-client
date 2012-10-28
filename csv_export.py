@@ -15,6 +15,7 @@ api = sch_client.API(config['uri'], config['key'], config['secret'])
 csvname = config['export_csv'] if 'export_csv' in config else 'export.csv'
 with open(csvname, 'wb') as csvfile:
 
+    resident_columns = set()
     residency_columns = set()
     mealplan_columns = set()
     instances = api.get_instances()
@@ -29,6 +30,9 @@ with open(csvname, 'wb') as csvfile:
 
         # iterate to get full set of columns
         for resident in residents:
+            for key in resident:
+                if key not in ['id', 'residency', 'meal_plan']:
+                    resident_columns.add(key)
             if resident['residency']:
                 for key in resident['residency']:
                     residency_columns.add(key)
@@ -37,14 +41,17 @@ with open(csvname, 'wb') as csvfile:
                     mealplan_columns.add(key)
 
         # sort for consistency and to place uppercase columns first
+        resident_columns = sorted(resident_columns)
+        resident_columns.insert(0, 'id')
         residency_columns = sorted(residency_columns)
         mealplan_columns = sorted(mealplan_columns)
 
         # write header
-        header = ['id']
+        header = []
         for key in sorted(instance):
             header.append(key)
-        header.append('application_time')
+        for key in resident_columns:
+            header.append(key)
 
         for column in residency_columns:
             header.append(column)
@@ -54,10 +61,14 @@ with open(csvname, 'wb') as csvfile:
 
         # iterate to write data
         for resident in residents:
-            row = [resident['id']]
+            row = []
             for key in sorted(instance):
                 row.append(instance[key])
-            row.append(resident['application_time'])
+            for key in resident_columns:
+                if key in resident:
+                    row.append(resident[key])
+                else:
+                    row.append(None)
 
             for key in residency_columns:
                 if resident['residency'] and key in resident['residency']:
