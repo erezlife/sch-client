@@ -4,6 +4,7 @@ import sch_client
 import json
 import os
 import csv
+from copy import copy
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 sch_client.initLogging(__location__, 'csv_export')
@@ -24,14 +25,16 @@ with open(csvname, 'wb') as csvfile:
         for key in instance:
             sch_client.printme(key + "=" + instance[key], ' ')
         sch_client.printme()
-        residents = api.get_residents(instance)
+        query = copy(instance)
+        query['include_name'] = 1
+        residents = api.get_residents(query)
         writer = csv.writer(csvfile, dialect='excel')
         sch_client.printme("Total Residents: " + str(len(residents)))
 
         # iterate to get full set of columns
         for resident in residents:
             for key in resident:
-                if key not in ['id', 'residency', 'meal_plan']:
+                if key not in ['id', 'residency', 'meal_plan', 'first_name', 'last_name']:
                     resident_columns.add(key)
             if resident['residency']:
                 for key in resident['residency']:
@@ -43,6 +46,8 @@ with open(csvname, 'wb') as csvfile:
         # sort for consistency and to place uppercase columns first
         resident_columns = sorted(resident_columns)
         resident_columns.insert(0, 'id')
+        resident_columns.insert(1, 'first_name')
+        resident_columns.insert(2, 'last_name')
         residency_columns = sorted(residency_columns)
         mealplan_columns = sorted(mealplan_columns)
 
