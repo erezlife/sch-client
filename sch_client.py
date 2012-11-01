@@ -40,7 +40,7 @@ def printme(s='', end='\n'):
         global log_buffer
         log_buffer += str(s) + end
         if len(end) > 0 and end[-1] == '\n':
-            logger.info(log_buffer)
+            logger.info(log_buffer.rstrip())
             log_buffer = ''
 
 
