@@ -45,6 +45,18 @@ AND BLDG_LOC_CDE = $%$BLDG_LOC_CDE$%$
 AND BLDG_CDE = $%$BLDG_CDE$%$
 AND ROOM_CDE = $%$ROOM_CDE$%$"""
 
+room_assign_clear_resident = """
+UPDATE ROOM_ASSIGN
+SET ID_NUM = NULL,
+    ASSIGN_DTE = NULL,
+    JOB_TIME = GETDATE(),
+    JOB_NAME = 'sch.import_residency',
+    USER_NAME = 'SCH',
+    ROOM_ASSIGN_STS = 'U',
+    ROOM_TYPE = NULL
+WHERE SESS_CDE = $%$SESS_CDE$%$
+AND ID_NUM = $%$id$%$"""
+
 room_assign_insert = """
 INSERT INTO ROOM_ASSIGN (
     SESS_CDE,
@@ -363,7 +375,7 @@ for instance in instances:
             query, query_params = sch_client.prepare_query(sess_bldg_master_update, params)
             sess_bldg_master_count_update += cursor.execute(query, *query_params).rowcount
 
-    # clear all ROOM_ASSIGN data that exists in SCH
+    # clear all ROOM_ASSIGN room data that exists in SCH
     for room_tuple in room_set:
         params = copy(instance)
         params['BLDG_LOC_CDE'] = room_tuple[0]
@@ -389,6 +401,10 @@ for instance in instances:
             bldg_cde = resident['residency']['BLDG_CDE']
             room_cde = resident['residency']['ROOM_CDE']
             room_occupants[bldg_loc_cde][bldg_cde][room_cde].append(resident['id'])
+
+            # clear ROOM_ASSIGN data for resident (in case they were in a room we don't track)
+            query, query_params = sch_client.prepare_query(room_assign_clear_resident, params)
+            cursor.execute(query, *query_params)
 
             # standard update
             if verbose:
