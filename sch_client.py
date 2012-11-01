@@ -15,14 +15,17 @@ else:
 
 # Global Logger
 logger = logging.getLogger('sch_client')
+log_buffer = ''
 
 
 def log_handler(type, value, tb):
+    global logger
     trace = ''.join(traceback.format_exception(type, value, tb))
     logger.exception(trace)
 
 
 def initLogging(dir, name):
+    global logger
     hdlr = logging.FileHandler(dir + '/' + name + '.log')
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     hdlr.setFormatter(formatter)
@@ -31,10 +34,14 @@ def initLogging(dir, name):
     sys.excepthook = log_handler
 
 
-def printme(s="", end="\n"):
+def printme(s='', end='\n'):
     sys.stdout.write(str(s) + end)
     if logger:
-        logger.info(str(s) + end.rstrip())
+        global log_buffer
+        log_buffer += str(s) + end
+        if end[-1] == '\n':
+            logger.info(log_buffer)
+            log_buffer = ''
 
 
 def urlopen(req):
