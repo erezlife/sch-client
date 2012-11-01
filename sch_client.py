@@ -21,7 +21,8 @@ log_buffer = ''
 def log_handler(type, value, tb):
     global logger
     trace = ''.join(traceback.format_exception(type, value, tb))
-    logger.exception(trace)
+    sys.stdout.write(trace)
+    logger.critical(trace)
 
 
 def initLogging(dir, name):
