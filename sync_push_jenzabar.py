@@ -91,6 +91,7 @@ VALUES (
 stud_sess_assign_update = """
 UPDATE STUD_SESS_ASSIGN
 SET MEAL_PLAN = $%$MEAL_PLAN$%$,
+    ROOM_TYPE = $%$ROOM_TYPE$%$,
     ROOM_ASSIGN_STS = $%$ROOM_ASSIGN_STS$%$,
     RESID_COMMUTER_STS = $%$RESID_COMMUTER_STS$%$,
     JOB_TIME = GETDATE(),
@@ -114,6 +115,7 @@ INSERT INTO STUD_SESS_ASSIGN (
     SESS_CDE,
     ID_NUM,
     MEAL_PLAN,
+    ROOM_TYPE,
     ROOM_ASSIGN_STS,
     RESID_COMMUTER_STS,
     JOB_TIME,
@@ -124,6 +126,7 @@ VALUES (
     $%$SESS_CDE$%$,
     $%$id$%$,
     $%$MEAL_PLAN$%$,
+    $%$ROOM_TYPE$%$,
     $%$ROOM_ASSIGN_STS$%$,
     $%$RESID_COMMUTER_STS$%$,
     GETDATE(),
