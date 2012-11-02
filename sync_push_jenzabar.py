@@ -451,6 +451,7 @@ for instance in instances:
 
             params['ROOM_ASSIGN_STS'] = 'U'
             params['RESID_COMMUTER_STS'] = None
+            params['ROOM_TYPE'] = None
 
             # set room_assign_sts to unset if resident previously marked as a resident, otherwise only set meal_plan
             if stud_row and stud_row.RESID_COMMUTER_STS == 'R':
