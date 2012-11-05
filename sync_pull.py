@@ -5,6 +5,18 @@ import json
 import pyodbc
 import os
 
+
+def execute_pull(api, conn, query, params, columns, batch_size=50):
+    cursor = conn.cursor()
+    query, query_params = sch_client.prepare_query(query, params)
+    cursor.execute(query, *query_params)
+
+    def iterate():
+        return cursor.fetchone()
+
+    return sch_client.set_residents_batch(api, iterate, columns, params, batch_size)
+
+
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 sch_client.initLogging(__location__, 'sync_pull')
 sch_client.printme('------ Begin sync_pull ------')
@@ -20,7 +32,7 @@ for instance in instances:
     for key in instance:
         sch_client.printme(key + "=" + instance[key], ' ')
     sch_client.printme()
-    num_updated = sch_client.execute_pull_query(api, connection, sql, instance, columns)
+    num_updated = execute_pull(api, connection, sql, instance, columns)
     sch_client.printme("Records updated: " + str(num_updated))
 
 sch_client.printme('------ End sync_pull ------')

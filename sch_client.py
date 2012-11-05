@@ -81,18 +81,13 @@ def prepare_query(query, params):
     return query, param_vals
 
 
-def execute_pull_query(api, conn, query, params, columns):
-    cursor = conn.cursor()
-    query, query_params = prepare_query(query, params)
-    cursor.execute(query, *query_params)
-
+def set_residents_batch(api, iterate, columns, params, batch_size=50):
     updated = 0
     batch_count = 0
-    batch_size = 50
     while True:
         data = []
         while len(data) < batch_size:
-            row = cursor.fetchone()
+            row = iterate()
             if not row: break
             record = []
             for val in row:
