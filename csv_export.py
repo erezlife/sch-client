@@ -19,7 +19,7 @@ with open(csvname, 'w') as csvfile:
     residency_columns = set()
     mealplan_columns = set()
     instances = api.get_instances()
-    resident_lists = {}  # a list of residents per instance
+    resident_lists = []  # a list of residents per instance
 
     for instance in instances:
         sch_client.printme("Processing instance", ' ')
@@ -29,7 +29,7 @@ with open(csvname, 'w') as csvfile:
         query = copy(instance)
         query['include_name'] = 1
         residents = api.get_residents(query)
-        resident_lists[instance] = residents
+        resident_lists.append(residents)
         writer = csv.writer(csvfile, dialect='excel')
         sch_client.printme("Total Residents: " + str(len(residents)))
 
@@ -45,8 +45,9 @@ with open(csvname, 'w') as csvfile:
                 for key in resident['meal_plan']:
                     mealplan_columns.add(key)
 
+    instance_num = 0
     for instance in instances:
-        residents = resident_lists[instance]
+        residents = resident_lists[instance_num]
 
         # sort for consistency and to place uppercase columns first
         resident_columns = sorted(resident_columns)
@@ -91,5 +92,7 @@ with open(csvname, 'w') as csvfile:
                 else:
                     row.append(None)
             writer.writerow(row)
+
+        instance_num += 1
 
 sch_client.printme('------ End csv_export ------')
