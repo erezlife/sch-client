@@ -45,17 +45,17 @@ with open(csvname, 'w') as csvfile:
                 for key in resident['meal_plan']:
                     mealplan_columns.add(key)
 
+    # sort for consistency and to place uppercase columns first
+    resident_columns = sorted(resident_columns)
+    resident_columns.insert(0, 'id')
+    resident_columns.insert(1, 'first_name')
+    resident_columns.insert(2, 'last_name')
+    residency_columns = sorted(residency_columns)
+    mealplan_columns = sorted(mealplan_columns)
+
     instance_num = 0
     for instance in instances:
         residents = resident_lists[instance_num]
-
-        # sort for consistency and to place uppercase columns first
-        resident_columns = sorted(resident_columns)
-        resident_columns.insert(0, 'id')
-        resident_columns.insert(1, 'first_name')
-        resident_columns.insert(2, 'last_name')
-        residency_columns = sorted(residency_columns)
-        mealplan_columns = sorted(mealplan_columns)
 
         # write header
         header = []
