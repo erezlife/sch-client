@@ -10,7 +10,6 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 sch_client.initLogging(__location__, 'csv_export')
 sch_client.printme('------ Begin csv_export ------')
 config = json.load(open(os.path.join(__location__, 'config.json')))
-columns = json.load(open(os.path.join(__location__, config['pull_map'])))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 
 csvname = config['export_csv'] if 'export_csv' in config else 'export.csv'
