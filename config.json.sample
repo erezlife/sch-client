@@ -8,6 +8,7 @@
 	"import_csv": "import.csv",
 	"import_map": "import.csv.json",
 	"export_csv": "export.csv",
+	"import_csv_header": true,
 	"powercampus": {
 		"push_params": {
 			"ACADEMIC_SESSION": "REG"

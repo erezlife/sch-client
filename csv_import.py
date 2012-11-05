@@ -14,9 +14,12 @@ columns = json.load(open(os.path.join(__location__, config['import_map'])))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 
 csvname = config['import_csv'] if 'import_csv' in config else 'import.csv'
+has_header = config['import_csv_header'] if 'import_csv_header' in config else False
 with open(csvname, 'rb') as csvfile:
 
     reader = csv.reader(csvfile, dialect='excel')
+    if has_header:
+        reader.next()
 
     def iterate():
         try:
