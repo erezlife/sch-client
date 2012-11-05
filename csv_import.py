@@ -15,15 +15,15 @@ api = sch_client.API(config['uri'], config['key'], config['secret'])
 
 csvname = config['import_csv'] if 'import_csv' in config else 'import.csv'
 has_header = config['import_csv_header'] if 'import_csv_header' in config else False
-with open(csvname, 'rb') as csvfile:
+with open(csvname, 'r') as csvfile:
 
     reader = csv.reader(csvfile, dialect='excel')
     if has_header:
-        reader.next()
+        next(reader)
 
     def iterate():
         try:
-            return reader.next()
+            return next(reader)
         except StopIteration:
             return None
 

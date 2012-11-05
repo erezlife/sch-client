@@ -128,7 +128,13 @@ class API:
         options = copy(options)
         options['token'] = self.token
         uri = self.uri + '/resident?' + urlencode(options)
-        self.response = urlopen(uri)
+
+        try:
+            self.response = urlopen(uri)
+        except Exception as e:
+            printme(e)
+            exit(1)
+
         return json.loads(self.response.read().decode('utf8'))
 
     def set_residents(self, columns, data, options):
@@ -142,14 +148,25 @@ class API:
         req = create_request(uri, req_data)
         req.add_header('Content-Type', 'application/json')
         req.get_method = lambda: 'PUT'
-        self.response = urlopen(req)
+
+        try:
+            self.response = urlopen(req)
+        except Exception as e:
+            printme(e)
+            exit(1)
+
         return json.loads(self.response.read().decode('utf8'))
 
     def get_rooms(self, options):
         options = copy(options)
         options['token'] = self.token
         uri = self.uri + '/room?' + urlencode(options)
-        self.response = urlopen(uri)
+        try:
+            self.response = urlopen(uri)
+        except Exception as e:
+            printme(e)
+            exit(1)
+
         return json.loads(self.response.read().decode('utf8'))
 
     def get_instances(self, active=True):
@@ -158,7 +175,12 @@ class API:
             'active': 1 if active else 0
         }
         uri = self.uri + '/instance?' + urlencode(options)
-        self.response = urlopen(uri)
+        try:
+            self.response = urlopen(uri)
+        except Exception as e:
+            printme(e)
+            exit(1)
+
         instances = json.loads(self.response.read().decode('utf8'))
         for instance in instances:
             if len(instance) == 1:
@@ -170,5 +192,11 @@ class API:
     def auth(self):
         data = json.dumps({'key': self.key, 'secret': self.secret}).encode('utf8')
         req = create_request(self.uri + '/auth', data, {'Content-Type': 'application/json'})
-        response = urlopen(req)
-        self.token = json.loads(response.read().decode('utf8'))['token']
+
+        try:
+            self.response = urlopen(req)
+        except Exception as e:
+            printme(e)
+            exit(1)
+
+        self.token = json.loads(self.response.read().decode('utf8'))['token']
