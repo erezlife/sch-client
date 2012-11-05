@@ -20,6 +20,7 @@ with open(csvname, 'w') as csvfile:
     mealplan_columns = set()
     instances = api.get_instances()
     resident_lists = []  # a list of residents per instance
+    writer = csv.writer(csvfile, dialect='excel')
 
     for instance in instances:
         sch_client.printme("Processing instance", ' ')
@@ -30,7 +31,6 @@ with open(csvname, 'w') as csvfile:
         query['include_name'] = 1
         residents = api.get_residents(query)
         resident_lists.append(residents)
-        writer = csv.writer(csvfile, dialect='excel')
         sch_client.printme("Total Residents: " + str(len(residents)))
 
         # iterate to get full set of columns
@@ -53,22 +53,22 @@ with open(csvname, 'w') as csvfile:
     residency_columns = sorted(residency_columns)
     mealplan_columns = sorted(mealplan_columns)
 
+    # write header
+    header = []
+    for key in sorted(instance):
+        header.append(key)
+    for key in resident_columns:
+        header.append(key)
+
+    for column in residency_columns:
+        header.append(column)
+    for column in mealplan_columns:
+        header.append(column)
+    writer.writerow(header)
+
     instance_num = 0
     for instance in instances:
         residents = resident_lists[instance_num]
-
-        # write header
-        header = []
-        for key in sorted(instance):
-            header.append(key)
-        for key in resident_columns:
-            header.append(key)
-
-        for column in residency_columns:
-            header.append(column)
-        for column in mealplan_columns:
-            header.append(column)
-        writer.writerow(header)
 
         # iterate to write data
         for resident in residents:
