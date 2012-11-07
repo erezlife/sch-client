@@ -90,7 +90,7 @@ VALUES (
 
 stud_sess_assign_update = """
 UPDATE STUD_SESS_ASSIGN
-SET MEAL_PLAN = $%$MEAL_PLAN$%$,
+SET -- MEAL_PLAN = $%$MEAL_PLAN$%$,
     ROOM_TYPE = $%$ROOM_TYPE$%$,
     ROOM_ASSIGN_STS = $%$ROOM_ASSIGN_STS$%$,
     RESID_COMMUTER_STS = $%$RESID_COMMUTER_STS$%$,
@@ -103,7 +103,7 @@ AND ID_NUM = $%$id$%$"""
 # update RESID_COMMUTER_STS meal_plan only
 stud_sess_assign_update_meal = """
 UPDATE STUD_SESS_ASSIGN
-SET MEAL_PLAN = $%$MEAL_PLAN$%$,
+SET -- MEAL_PLAN = $%$MEAL_PLAN$%$,
     JOB_TIME = GETDATE(),
     JOB_NAME = 'sch.import_residency',
     USER_NAME = 'SCH'
@@ -114,7 +114,7 @@ stud_sess_assign_insert = """
 INSERT INTO STUD_SESS_ASSIGN (
     SESS_CDE,
     ID_NUM,
-    MEAL_PLAN,
+    -- MEAL_PLAN,
     ROOM_TYPE,
     ROOM_ASSIGN_STS,
     RESID_COMMUTER_STS,
@@ -125,7 +125,7 @@ INSERT INTO STUD_SESS_ASSIGN (
 VALUES (
     $%$SESS_CDE$%$,
     $%$id$%$,
-    $%$MEAL_PLAN$%$,
+    -- $%$MEAL_PLAN$%$,
     $%$ROOM_TYPE$%$,
     $%$ROOM_ASSIGN_STS$%$,
     $%$RESID_COMMUTER_STS$%$,
