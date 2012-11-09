@@ -13,7 +13,7 @@
 				"output": "Resident"
 			},
 			{
-				"field": "meal_plan",
+				"field": "ResLife_ImportID",
 				"output": "Off-Campus"
 			}
 		]

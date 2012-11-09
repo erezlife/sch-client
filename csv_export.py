@@ -6,6 +6,37 @@ import os
 import csv
 from copy import copy
 
+
+def get_calculated_columns(resident, calculated_columns):
+    outputs = []
+    column_num = 0
+    for column in calculated_columns:
+        outputs.append(None)
+        for rule in calculated_columns[column]:
+            output = rule['output'] if 'output' in rule else None
+
+            field = rule['field'] if 'field' in rule else None
+            if not field:
+                outputs[column_num] = output
+                break
+
+            value = rule['value'] if 'value' in rule else None
+
+            field_value = None
+            if field in resident:
+                field_value = resident[field]
+            elif resident['residency'] and field in resident['residency']:
+                field_value = resident['residency'][field]
+            elif resident['meal_plan'] and field in resident['meal_plan']:
+                field_value = resident['residency'][field]
+
+            if (value and field_value == value) or (not value and field_value):
+                outputs[column_num] = output
+                break
+        column_num += 1
+    return outputs
+
+
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 sch_client.initLogging(__location__, 'csv_export')
 sch_client.printme('------ Begin csv_export ------')
@@ -18,6 +49,8 @@ with open(csvname, 'w') as csvfile:
     resident_columns = set()
     residency_columns = set()
     mealplan_columns = set()
+    calculated_columns = config['calculated_columns'] if 'calculated_columns' in config else {}
+
     instances = api.get_instances()
     resident_lists = []  # a list of residents per instance
     writer = csv.writer(csvfile, dialect='excel')
@@ -64,6 +97,8 @@ with open(csvname, 'w') as csvfile:
         header.append(column)
     for column in mealplan_columns:
         header.append(column)
+    for column in calculated_columns:
+        header.append(column)
     writer.writerow(header)
 
     instance_num = 0
@@ -91,6 +126,7 @@ with open(csvname, 'w') as csvfile:
                     row.append(resident['meal_plan'][key])
                 else:
                     row.append(None)
+            row += get_calculated_columns(resident, calculated_columns)
             writer.writerow(row)
 
         instance_num += 1
