@@ -1,0 +1,13 @@
+{
+	"key": "yEm9RJSTbO0WnjXtJuGnWNldSV7F9TVI",
+	"secret": "$2a$10$HPP4hp2SA/GR6S7UsgDqjeMRnsmmea/rSF/rH/OMN02UQY5067CVi",
+	"uri": "https://test.simplecampushousing.com/api",
+	"db_connection": "DRIVER={SQL Server};SERVER=powercampusdb;DATABASE=CAMPUS6;UID=SCH;PWD=password",
+	"pull_sql": "db/select-resident.powercampus.sql",
+	"pull_map": "db/select-resident.powercampus.json",
+	"powercampus": {
+		"push_params": {
+			"ACADEMIC_SESSION": "REG"
+		}
+	}
+}
