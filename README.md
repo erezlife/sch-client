@@ -27,7 +27,7 @@ Each rule is itself a dictionary. The following keys can be used to define a rul
 * _value_ - The value of _field_ to match. If the value matches, sets the calculated column to _output_. If _value_ is not defined, _field_ being not null is considered a match
 * _output_ - The value to output for this calculated column if the rule matches. If not defined, a blank value is used for output
 
-## API Debug Refrence
+## API Debug Reference
 The following JSON can be used to directly test the HTTP PUT method of /resident in the SCH API. Provided a valid token, this data will save sample students to SimpleCampusHousing
 
     {
