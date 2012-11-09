@@ -3,8 +3,8 @@
 	"secret": "$2a$10$HPP4hp2SA/GR6S7UsgDqjeMRnsmmea/rSF/rH/OMN02UQY5067CVi",
 	"uri": "https://test.simplecampushousing.com/api",
 	"import_csv": "import.csv",
-	"import_map": "import.csv.json",
 	"import_csv_header": true,
+	"import_map": "import.csv.json",
 	"export_csv": "export.csv",
 	"calculated_columns": {
 		"ResLife_BoardType": [
