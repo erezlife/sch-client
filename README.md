@@ -24,7 +24,7 @@ Additional output columns can be added to the csv export file resulting from csv
 
 Each rule is itself a dictionary. The following keys can be used to define a rule:
 * _field_ - The name of the input field to check. If no _field_ is set, the rule acts as a default and will always match.
-* _value_ - The value of _field_ to match. If the value matches, sets the calculated column to _output_. If _value_ is not defined, _field_ being not null is considered a match
+* _value_ - The value of _field_ to match. If the value matches, sets the calculated column to _output_. If _value_ is not defined, _field_ being not empty is considered a match
 * _output_ - The value to output for this calculated column if the rule matches. If not defined, a blank value is used for output
 
 ## API Debug Reference
