@@ -133,6 +133,7 @@ class API:
             self.response = urlopen(uri)
         except Exception as e:
             printme(e)
+            printme(e.read().decode('utf8'))
             exit(1)
 
         return json.loads(self.response.read().decode('utf8'))
@@ -153,6 +154,7 @@ class API:
             self.response = urlopen(req)
         except Exception as e:
             printme(e)
+            printme(e.read().decode('utf8'))
             exit(1)
 
         return json.loads(self.response.read().decode('utf8'))
@@ -165,6 +167,7 @@ class API:
             self.response = urlopen(uri)
         except Exception as e:
             printme(e)
+            printme(e.read().decode('utf8'))
             exit(1)
 
         return json.loads(self.response.read().decode('utf8'))
@@ -179,6 +182,7 @@ class API:
             self.response = urlopen(uri)
         except Exception as e:
             printme(e)
+            printme(e.read().decode('utf8'))
             exit(1)
 
         instances = json.loads(self.response.read().decode('utf8'))
@@ -197,6 +201,7 @@ class API:
             self.response = urlopen(req)
         except Exception as e:
             printme(e)
+            printme(e.read().decode('utf8'))
             exit(1)
 
         self.token = json.loads(self.response.read().decode('utf8'))['token']
