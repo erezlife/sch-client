@@ -49,11 +49,11 @@ AND ACADEMIC_YEAR = $%$ACADEMIC_YEAR$%$
 AND ACADEMIC_TERM = $%$ACADEMIC_TERM$%$
 AND ACADEMIC_SESSION = $%$ACADEMIC_SESSION$%$"""
 
-res_update_count = 0
-res_null_count = 0
-meal_update_count = 0
 instances = api.get_instances()
 for instance in instances:
+    res_update_count = 0
+    res_null_count = 0
+    meal_update_count = 0
     sch_client.printme("Processing instance", ' ')
     for key in instance:
         sch_client.printme(key + "=" + instance[key], ' ')
