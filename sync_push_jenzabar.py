@@ -245,6 +245,7 @@ SELECT * FROM NAME_MASTER WHERE ID_NUM = $%$id$%$
 room_master_select = """
 SELECT * FROM ROOM_MASTER WHERE LOC_CDE = $%$BLDG_LOC_CDE$%$ AND BLDG_CDE = $%$BLDG_CDE$%$ AND ROOM_CDE = $%$ROOM_CDE$%$
 """
+
 stud_roommates_delete = """
 DELETE FROM STUD_ROOMMATES
 WHERE SESS_CDE = '%s'
@@ -477,8 +478,9 @@ for instance in instances:
     bldg_loc_cdes = ','.join(map(lambda w: "'" + w + "'", bldg_loc_set))
     bldg_cdes = ','.join(map(lambda w: "'" + w + "'", bldg_set))
     res_ids = ','.join(map(lambda r: r['id'], filter(lambda r: r['residency'], residents)))
-    query = stud_roommates_delete % (instance['SESS_CDE'], bldg_loc_cdes, bldg_cdes, res_ids)
-    cursor.execute(query)
+    if res_ids and bldg_cdes and bldg_loc_cdes:
+        query = stud_roommates_delete % (instance['SESS_CDE'], bldg_loc_cdes, bldg_cdes, res_ids)
+        cursor.execute(query)
 
     # insert new roommates
     for bldg_loc_cde in room_occupants:
