@@ -7,8 +7,8 @@ import csv
 
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-sch_client.initLogging(__location__, 'sync_pull')
-sch_client.printme('------ Begin sync_pull ------')
+sch_client.initLogging(__location__, 'csv_import')
+sch_client.printme('------ Begin csv_import ------')
 config = json.load(open(os.path.join(__location__, 'config.json')))
 columns = json.load(open(os.path.join(__location__, config['import_map'])))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
@@ -30,4 +30,4 @@ with open(csvname, 'r') as csvfile:
     num_updated = sch_client.set_residents_batch(api, iterate, columns, {}, 50)
     sch_client.printme("Records updated: " + str(num_updated))
 
-sch_client.printme('------ End sync_pull ------')
+sch_client.printme('------ End csv_import ------')
