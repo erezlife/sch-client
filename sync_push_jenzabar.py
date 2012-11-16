@@ -287,22 +287,23 @@ def resident_exists(id):
     rowcount = len(cursor.execute(query, *query_params).fetchall())
     return rowcount > 0
 
-room_assign_count_update = 0
-room_assign_count_insert = 0
-stud_sess_assign_count_update = 0
-stud_sess_assign_count_insert = 0
-sess_room_master_count_update = 0
-sess_room_master_count_insert = 0
-sess_bldg_master_count_update = 0
-sess_bldg_master_count_insert = 0
-building_master_missing = set()
-room_master_missing = set()
-resident_missing = set()
-res_null_count = 0
-room_occupants = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 instances = api.get_instances()
 
 for instance in instances:
+    room_assign_count_update = 0
+    room_assign_count_insert = 0
+    stud_sess_assign_count_update = 0
+    stud_sess_assign_count_insert = 0
+    sess_room_master_count_update = 0
+    sess_room_master_count_insert = 0
+    sess_bldg_master_count_update = 0
+    sess_bldg_master_count_insert = 0
+    building_master_missing = set()
+    room_master_missing = set()
+    resident_missing = set()
+    res_null_count = 0
+    room_occupants = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+
     sch_client.printme("Processing instance", ' ')
     for key in instance:
         sch_client.printme(key + "=" + instance[key], ' ')
