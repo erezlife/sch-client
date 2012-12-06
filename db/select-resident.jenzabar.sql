@@ -25,4 +25,4 @@ LEFT JOIN stud_sess_asgn_ext ext
 WHERE (
     (c.yr_cde = $%$YR_CDE$%$ AND c.trm_cde = $%$TRM_CDE$%$) OR
     (stsd.yr_cde = $%$YR_CDE$%$ AND stsd.trm_cde = $%$TRM_CDE$%$)
-) AND bm.birth_dte IS NOT NULL
+) AND bm.birth_dte IS NOT NULL AND bm.gender IS NOT NULL
