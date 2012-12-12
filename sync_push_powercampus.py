@@ -68,9 +68,10 @@ for instance in instances:
     sch_client.printme("Total Rooms: " + str(len(rooms)))
     # save hall/room information for future reference
     for room in rooms:
-        dorm_room_set.add((room['DORM_CAMPUS'], room['DORM_BUILDING'], room['DORM_ROOM']))
-        dorm_building_set.add(room['DORM_BUILDING'])
-        dorm_campus_set.add(room['DORM_CAMPUS'])
+        if 'DORM_CAMPUS' in room and 'DORM_BUILDING' in room and 'DORM_ROOM' in room:
+            dorm_room_set.add((room['DORM_CAMPUS'], room['DORM_BUILDING'], room['DORM_ROOM']))
+            dorm_building_set.add(room['DORM_BUILDING'])
+            dorm_campus_set.add(room['DORM_CAMPUS'])
 
     residents = api.get_residents(instance)
     sch_client.printme("Total Residents: " + str(len(residents)))
