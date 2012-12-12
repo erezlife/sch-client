@@ -15,7 +15,7 @@ cursor = connection.cursor()
 verbose = False
 
 residency_select = """
-SELECT RESIDENT_COMMUTER
+SELECT RESIDENT_COMMUTER, DORM_CAMPUS, DORM_BUILDING, DORM_ROOM
 FROM Residency
 WHERE PEOPLE_CODE_ID = $%$id$%$
 AND ACADEMIC_YEAR = $%$ACADEMIC_YEAR$%$
@@ -59,6 +59,18 @@ for instance in instances:
         sch_client.printme(key + "=" + instance[key], ' ')
     sch_client.printme()
 
+    rooms = api.get_rooms(instance)
+    dorm_room_set = set()
+    dorm_building_set = set()
+    dorm_campus_set = set()
+
+    sch_client.printme("Total Rooms: " + str(len(rooms)))
+    # save hall/room information for future reference
+    for room in rooms:
+        dorm_room_set.add((room['DORM_CAMPUS'], room['DORM_BUILDING'], room['DORM_ROOM']))
+        dorm_building_set.add(room['DORM_BUILDING'])
+        dorm_campus_set.add(room['DORM_CAMPUS'])
+
     residents = api.get_residents(instance)
     sch_client.printme("Total Residents: " + str(len(residents)))
     for resident in residents:
@@ -77,22 +89,31 @@ for instance in instances:
             query, query_params = sch_client.prepare_query(residency_update, params)
             res_update_count += cursor.execute(query, *query_params).rowcount
         else:
-            # check that we aren't overriding existing commuter status
-            if verbose:
-                sch_client.printme("Setting null Residency for " + params['id'])
             query, query_params = sch_client.prepare_query(residency_select, params)
             cursor.execute(query, *query_params)
             row = cursor.fetchone()
-            params['DORM_CAMPUS'] = None
-            params['DORM_PLAN'] = None
-            params['DORM_BUILDING'] = None
-            params['DORM_ROOM'] = None
-            params['RESIDENT_COMMUTER'] = None
-            if row and row.RESIDENT_COMMUTER and row.RESIDENT_COMMUTER != 'R':
-                params['RESIDENT_COMMUTER'] = row.RESIDENT_COMMUTER
+            not_resident = not row or row.RESIDENT_COMMUTER != 'R' and not row.DORM_CAMPUS and not row.DORM_BUILDING and not row.DORM_ROOM
+            known_room = row and (row.DORM_CAMPUS, row.DORM_BUILDING, row.DORM_ROOM) in dorm_room_set
 
-            query, query_params = sch_client.prepare_query(residency_update, params)
-            res_null_count += cursor.execute(query, *query_params).rowcount
+            # only erase residency for rooms controlled by SCH
+            if not_resident or known_room:
+                if verbose:
+                    sch_client.printme("Setting null Residency for " + params['id'])
+
+                params['DORM_CAMPUS'] = None
+                params['DORM_PLAN'] = None
+                params['DORM_BUILDING'] = None
+                params['DORM_ROOM'] = None
+                params['RESIDENT_COMMUTER'] = None
+
+                # check that we aren't overriding existing commuter status
+                if row and row.RESIDENT_COMMUTER and row.RESIDENT_COMMUTER != 'R':
+                    params['RESIDENT_COMMUTER'] = row.RESIDENT_COMMUTER
+
+                query, query_params = sch_client.prepare_query(residency_update, params)
+                res_null_count += cursor.execute(query, *query_params).rowcount
+            elif verbose:
+                sch_client.printme("Skip setting null Residency for " + params['id'])
 
         # Update Meal Plan separately so updates are only run if value is set
         # FOOD_PLAN should never be set to null by this script
