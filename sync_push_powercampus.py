@@ -53,6 +53,7 @@ instances = api.get_instances()
 for instance in instances:
     res_update_count = 0
     res_null_count = 0
+    res_null_skipped_count = 0
     meal_update_count = 0
     sch_client.printme("Processing instance", ' ')
     for key in instance:
@@ -112,8 +113,10 @@ for instance in instances:
 
                 query, query_params = sch_client.prepare_query(residency_update, params)
                 res_null_count += cursor.execute(query, *query_params).rowcount
-            elif verbose:
-                sch_client.printme("Skip setting null Residency for " + params['id'])
+            else:
+                if verbose:
+                    sch_client.printme("Skip setting null Residency for " + params['id'])
+                res_null_skipped_count += 1
 
         # Update Meal Plan separately so updates are only run if value is set
         # FOOD_PLAN should never be set to null by this script
@@ -127,7 +130,7 @@ for instance in instances:
 
     connection.commit()
     sch_client.printme("Residency updates: " + str(res_update_count + res_null_count), " ")
-    sch_client.printme("(" + str(res_update_count) + " placed, " + str(res_null_count) + " unplaced)")
+    sch_client.printme("(" + str(res_update_count) + " placed, " + str(res_null_count) + " unplaced, " + str(res_null_skipped_count) + " skipped)")
     sch_client.printme("Meal Plan updates: " + str(meal_update_count))
     sch_client.printme("Record(s) not found: " + str(len(residents) - res_update_count - res_null_count))
 
