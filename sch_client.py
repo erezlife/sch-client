@@ -166,6 +166,7 @@ class API:
             printme("Unable to parse JSON output from API.")
             printme("Response:")
             printme(response)
+            exit(1)
 
         return json_response
 
