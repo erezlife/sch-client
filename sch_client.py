@@ -159,7 +159,15 @@ class API:
             printme(e.read().decode('utf8'))
             exit(1)
 
-        return json.loads(self.response.read().decode('utf8'))
+        response = self.response.read().decode('utf8')
+        try:
+            json_response = json.loads(response)
+        except Exception:
+            printme("Unable to parse JSON output from API.")
+            printme("Response:")
+            printme(response)
+
+        return json_response
 
     def get_rooms(self, options):
         options = copy(options)
