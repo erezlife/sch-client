@@ -84,23 +84,25 @@ def prepare_query(query, params):
 def set_residents_batch(api, iterate, columns, params, batch_size=50):
     updated = 0
     batch_count = 0
+    col_filter = lambda x: not ('ignore' in x and x['ignore'])
+    filtered_columns = filter(col_filter, columns)
     while True:
         data = []
         while len(data) < batch_size:
             row = iterate()
             if not row: break
             record = []
-            for val in row:
-                if val is None:
+            for i, val in enumerate(row):
+                if col_filter(columns[i]):
+                    if val is not None:
+                        val = str(val).rstrip()
                     record.append(val)
-                else:
-                    record.append(str(val).rstrip())
             data.append(record)
 
         batch_count += 1
         printme("saving batch " + str(batch_count), "")
         printme(" records " + str(updated + 1) + " - " + str(batch_size + updated))
-        result = api.set_residents(columns, data, params)
+        result = api.set_residents(filtered_columns, data, params)
         updated += result['updated']
         if len(data) < batch_size: break
 
