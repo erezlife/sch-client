@@ -6,7 +6,7 @@
 	"import_csv_header": true,
 	"import_map": "import.csv.json",
 	"export_csv": "export.csv",
-	"calculated_columns": {
+	"calculated_export_columns": {
 		"ResLife_BoardType": [
 			{
 				"field": "residency",
@@ -17,5 +17,35 @@
 				"output": "Off-Campus"
 			}
 		]
-	}
+	},
+	"calculated_import_columns": [
+		{
+			"map": {
+				"model": "ResidentInstance",
+				"field": "residentType",
+				"assnLookupField": "ref"
+			},
+			"conditions": [
+				{
+					"output": "Returning",
+					"rules": {"field": "type", "value": "E"}
+				},
+				{
+					"output": "Transfer",
+					"rules": [
+						{"field": "type", "value": "N"},
+						{"field": "cl", "value": "FR", "operator": "NE"}
+					]
+				},
+				{
+					"output": "Transfer",
+					"rules": [
+						{"field": "type", "value": "N"},
+						{"field": "cl", "value": "FF", "operator": "NE"}
+					]
+				}
+			],
+			"default": "New"
+		}
+	]
 }

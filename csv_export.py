@@ -49,7 +49,7 @@ with open(csvname, 'w') as csvfile:
     resident_columns = set()
     residency_columns = set()
     mealplan_columns = set()
-    calculated_columns = config['calculated_columns'] if 'calculated_columns' in config else {}
+    calculated_columns = config['calculated_export_columns'] if 'calculated_export_columns' in config else {}
 
     instances = api.get_instances()
     resident_lists = []  # a list of residents per instance
