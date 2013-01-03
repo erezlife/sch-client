@@ -85,7 +85,7 @@ def set_residents_batch(api, iterate, columns, params, batch_size=50):
     updated = 0
     batch_count = 0
     col_filter = lambda x: not ('ignore' in x and x['ignore'])
-    filtered_columns = filter(col_filter, columns)
+    filtered_columns = list(filter(col_filter, columns))
     while True:
         data = []
         while len(data) < batch_size:
