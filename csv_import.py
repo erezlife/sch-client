@@ -93,7 +93,13 @@ with open(csvname, 'r') as csvfile:
         resident += get_calculated_columns(resident)
         return resident
 
-    num_updated = sch_client.set_residents_batch(api, iterate, columns, {}, 50)
+    num_updated, num_skipped, missing_records = sch_client.set_residents_batch(api, iterate, columns, {}, 50)
     sch_client.printme("Records updated: " + str(num_updated))
-
+    sch_client.printme("Records skipped: " + str(num_skipped))
+    sch_client.printme("Missing records:")
+    for model, conditions in missing_records.items():
+        sch_client.printme("  " + model, ": ")
+        for field, value in conditions.items():
+            sch_client.printme(field + " = '" + value, "' ")
+        sch_client.printme()
 sch_client.printme('------ End csv_import ------')
