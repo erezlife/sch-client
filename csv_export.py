@@ -58,7 +58,7 @@ with open(csvname, 'w') as csvfile:
     for instance in instances:
         sch_client.printme("Processing instance", ' ')
         for key in instance:
-            sch_client.printme(key + "=" + instance[key], ' ')
+            sch_client.printme(key + "='" + instance[key], "' ")
         sch_client.printme()
         query = copy(instance)
         query['include_name'] = 1
