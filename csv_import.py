@@ -76,17 +76,18 @@ with open(csvname, 'r') as csvfile:
         outputs = []
         for i, column in enumerate(calculated_columns):
             outputs.append(column['default'])
-            for condition in column['conditions']:
-                if isinstance(condition['rules'], dict):
-                    valid = match_rule(condition['rules'], resident)
-                else:
-                    valid = True
-                    for rule in condition['rules']:
-                        valid = valid and match_rule(rule, resident)
-                        if not valid: break
-                if valid:
-                    outputs[i] = condition['output']
-                    break
+            if 'conditions' in column:
+                for condition in column['conditions']:
+                    if isinstance(condition['rules'], dict):
+                        valid = match_rule(condition['rules'], resident)
+                    else:
+                        valid = True
+                        for rule in condition['rules']:
+                            valid = valid and match_rule(rule, resident)
+                            if not valid: break
+                    if valid:
+                        outputs[i] = condition['output']
+                        break
         return outputs
 
     # closure to get resident external id and instance id from data
