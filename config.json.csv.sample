@@ -6,6 +6,7 @@
 	"import_csv_header": true,
 	"import_map": "import.csv.json",
 	"export_csv": "export.csv",
+	"deactivate_missing_residents": true,
 	"calculated_export_columns": {
 		"ResLife_BoardType": [
 			{

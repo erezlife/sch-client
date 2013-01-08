@@ -176,6 +176,37 @@ class API:
 
         return json_response
 
+    def set_residents_inactive(self, residents, options):
+        options = copy(options)
+        options['token'] = self.token
+        options['residents'] = residents
+        options['data'] = {'model': 'ResidentInstance', 'field': 'isActive', 'value': False}
+
+        req_data = json.dumps(options).encode('utf8')
+        uri = self.uri + '/resident/update_complement'
+
+        req = create_request(uri, req_data)
+        req.add_header('Content-Type', 'application/json')
+        req.get_method = lambda: 'POST'
+
+        try:
+            self.response = urlopen(req)
+        except Exception as e:
+            printme(e)
+            printme(e.read().decode('utf8'))
+            exit(1)
+
+        response = self.response.read().decode('utf8')
+        try:
+            json_response = json.loads(response)
+        except Exception:
+            printme("Unable to parse JSON output from API.")
+            printme("Response:")
+            printme(response)
+            exit(1)
+
+        return json_response
+
     def get_rooms(self, options):
         options = copy(options)
         options['token'] = self.token
@@ -189,7 +220,7 @@ class API:
 
         return json.loads(self.response.read().decode('utf8'))
 
-    def get_instances(self, active=True):
+    def get_instances(self, active=True, include_id=False):
         options = {
             'token': self.token,
             'active': 1 if active else 0
@@ -207,7 +238,8 @@ class API:
             if len(instance) == 1:
                 msg = "API ERROR: Instance '" + str(instance['id']) + "' does not have mapped fields"
                 raise Exception(msg)
-            del instance['id']
+            if not include_id:
+                del instance['id']
         return instances
 
     def auth(self):

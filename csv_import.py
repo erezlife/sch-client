@@ -16,7 +16,10 @@ api = sch_client.API(config['uri'], config['key'], config['secret'])
 csvname = config['import_csv'] if 'import_csv' in config else 'import.csv'
 has_header = config['import_csv_header'] if 'import_csv_header' in config else False
 calculated_columns = config['calculated_import_columns'] if 'calculated_import_columns' in config else []
+deactivate_missing = config['deactivate_missing_residents'] if 'deactivate_missing_residents' in config else False
 named_columns = {}
+resident_ids = {}   # dictionary of resident id lists for each instance
+
 with open(csvname, 'r') as csvfile:
 
     reader = csv.reader(csvfile, dialect='excel')
@@ -34,6 +37,9 @@ with open(csvname, 'r') as csvfile:
     # add calculated columns to mapping
     for column in calculated_columns:
         columns.append(column['map'])
+
+    if deactivate_missing:
+        instances = api.get_instances(True, True)
 
     # given a resident and a rule, determines if that resident satisfies the rule
     def match_rule(rule, resident):
@@ -83,6 +89,28 @@ with open(csvname, 'r') as csvfile:
                     break
         return outputs
 
+    # closure to get resident external id and instance id from data
+    def get_resident_instance_ids(resident):
+        instance_id = None
+        resident_id = None
+        for i, column in enumerate(columns):
+            if 'assnExtLookupField' in column and 'field' in column and column['field'] == 'instance':
+                for instance in instances:
+                    value_match = field_match = False
+                    for key, value in instance.items():
+                        if key == column['assnExtLookupField']:
+                            field_match = True
+                            # skip to next instance if field does not match
+                            if value == resident[i]:
+                                value_match = True
+                        if field_match and not value_match:
+                            break  # move on to next instance
+                    if field_match and value_match:
+                        instance_id = instance['id']
+            elif 'field' in column and column['field'] == 'externalId' or 'name' in column and column['name'] == 'id':
+                resident_id = resident[i]
+        return resident_id, instance_id
+
     # define iterator for batch resident function
     def iterate():
         try:
@@ -91,15 +119,39 @@ with open(csvname, 'r') as csvfile:
             return None
 
         resident += get_calculated_columns(resident)
+        if deactivate_missing:
+            resident_id, instance_id = get_resident_instance_ids(resident)
+            if resident_id and instance_id:
+                if instance_id in resident_ids:
+                    resident_ids[instance_id].append(resident_id)
+                else:
+                    resident_ids[instance_id] = [resident_id]
         return resident
 
     num_updated, num_skipped, missing_records = sch_client.set_residents_batch(api, iterate, columns, {}, 50)
+
+    num_deactivated = 0
+    if deactivate_missing:
+        for instance in instances:
+            instance_id = instance['id']
+            if instance_id in resident_ids and len(resident_ids[instance_id]) > 0:
+                del instance['id']
+                sch_client.printme("deactivating records for", ' ')
+                for key in instance:
+                    sch_client.printme(key + "='" + instance[key], "' ")
+                sch_client.printme()
+
+                result = api.set_residents_inactive(resident_ids[instance_id], instance)
+                num_deactivated += result['updated']
+
     sch_client.printme("Records updated: " + str(num_updated))
     sch_client.printme("Records skipped: " + str(num_skipped))
-    sch_client.printme("Missing records:")
-    for model, conditions in missing_records.items():
-        sch_client.printme("  " + model, ": ")
-        for field, value in conditions.items():
-            sch_client.printme(field + " = '" + value, "' ")
-        sch_client.printme()
+    sch_client.printme("Records deactivated: " + str(num_deactivated))
+    if len(missing_records) > 0:
+        sch_client.printme("Missing records:")
+        for model, conditions in missing_records.items():
+            sch_client.printme("  " + model, ": ")
+            for field, value in conditions.items():
+                sch_client.printme(field + " = '" + value, "' ")
+            sch_client.printme()
 sch_client.printme('------ End csv_import ------')
