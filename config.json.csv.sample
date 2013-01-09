@@ -35,14 +35,8 @@
 					"output": "Transfer",
 					"rules": [
 						{"field": "type", "value": "N"},
-						{"field": "cl", "value": "FR", "operator": "NE"}
-					]
-				},
-				{
-					"output": "Transfer",
-					"rules": [
-						{"field": "type", "value": "N"},
-						{"field": "cl", "value": "FF", "operator": "NE"}
+						{"field": "Class", "value": "FR", "operator": "NE"},
+						{"field": "Class", "value": "FF", "operator": "NE"}
 					]
 				}
 			],
