@@ -5,6 +5,7 @@
 	"db_connection": "DRIVER={SQL Server};SERVER=powercampusdb;DATABASE=CAMPUS6;UID=SCH;PWD=password",
 	"pull_sql": "db/select-resident.powercampus.sql",
 	"pull_map": "db/select-resident.powercampus.json",
+	"push_mealplan": false,
 	"powercampus": {
 		"push_params": {
 			"ACADEMIC_SESSION": "REG"

@@ -90,8 +90,7 @@ VALUES (
 
 stud_sess_assign_update = """
 UPDATE STUD_SESS_ASSIGN
-SET MEAL_PLAN = $%$MEAL_PLAN$%$,
-    ROOM_TYPE = $%$ROOM_TYPE$%$,
+SET ROOM_TYPE = $%$ROOM_TYPE$%$,
     ROOM_ASSIGN_STS = $%$ROOM_ASSIGN_STS$%$,
     RESID_COMMUTER_STS = $%$RESID_COMMUTER_STS$%$,
     JOB_TIME = GETDATE(),
@@ -100,7 +99,7 @@ SET MEAL_PLAN = $%$MEAL_PLAN$%$,
 WHERE SESS_CDE = $%$SESS_CDE$%$
 AND ID_NUM = $%$id$%$"""
 
-# update RESID_COMMUTER_STS meal_plan only
+# update STUD_SESS_ASSIGN meal_plan only
 stud_sess_assign_update_meal = """
 UPDATE STUD_SESS_ASSIGN
 SET MEAL_PLAN = $%$MEAL_PLAN$%$,
@@ -114,7 +113,6 @@ stud_sess_assign_insert = """
 INSERT INTO STUD_SESS_ASSIGN (
     SESS_CDE,
     ID_NUM,
-    MEAL_PLAN,
     ROOM_TYPE,
     ROOM_ASSIGN_STS,
     RESID_COMMUTER_STS,
@@ -125,7 +123,6 @@ INSERT INTO STUD_SESS_ASSIGN (
 VALUES (
     $%$SESS_CDE$%$,
     $%$id$%$,
-    $%$MEAL_PLAN$%$,
     $%$ROOM_TYPE$%$,
     $%$ROOM_ASSIGN_STS$%$,
     $%$RESID_COMMUTER_STS$%$,
@@ -304,6 +301,7 @@ for instance in instances:
     room_assign_count_insert = 0
     stud_sess_assign_count_update = 0
     stud_sess_assign_count_insert = 0
+    mealplan_count_update = 0
     sess_room_master_count_update = 0
     sess_room_master_count_insert = 0
     sess_bldg_master_count_update = 0
@@ -408,11 +406,6 @@ for instance in instances:
             params = copy(instance)
             params['id'] = resident['id']
 
-            if resident['meal_plan']:
-                params.update(resident['meal_plan'])
-            else:
-                params['MEAL_PLAN'] = None
-
             if resident['residency']:
                 bldg_loc_cde = resident['residency']['BLDG_LOC_CDE']
                 bldg_cde = resident['residency']['BLDG_CDE']
@@ -467,16 +460,15 @@ for instance in instances:
                 params['RESID_COMMUTER_STS'] = None
                 params['ROOM_TYPE'] = None
 
-                # set room_assign_sts to unset if resident previously marked as a resident, otherwise only set meal_plan
+                # set room_assign_sts to unset if resident previously marked as a resident
+                rowcount = 0
                 if stud_row and stud_row.RESID_COMMUTER_STS == 'R':
                     query, query_params = sch_client.prepare_query(stud_sess_assign_update, params)
-                else:
-                    query, query_params = sch_client.prepare_query(stud_sess_assign_update_meal, params)
+                    rowcount = cursor.execute(query, *query_params).rowcount
+                    stud_sess_assign_count_update += rowcount
 
-                rowcount = cursor.execute(query, *query_params).rowcount
-                stud_sess_assign_count_update += rowcount
-
-                if rowcount == 0:
+                # insert stud_sess_assign record if not found
+                if not stud_row:
                     if resident_exists(params['id']):
                         query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
                         cursor.execute(query, *query_params)
@@ -485,6 +477,15 @@ for instance in instances:
                         resident_missing.add(params['id'])
 
                 res_null_count += rowcount
+
+            if 'push_mealplan' in config and config['push_mealplan']:
+                if resident['meal_plan']:
+                    params.update(resident['meal_plan'])
+                else:
+                    params['MEAL_PLAN'] = None
+                query, query_params = sch_client.prepare_query(stud_sess_assign_update_meal, params)
+                rowcount = cursor.execute(query, *query_params).rowcount
+                mealplan_count_update += rowcount
 
         # delete old roommates for bldg_loc and bldg codes we know
         bldg_loc_cdes = ','.join(map(lambda w: "'" + w + "'", bldg_loc_set))

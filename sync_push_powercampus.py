@@ -118,13 +118,16 @@ for instance in instances:
                     sch_client.printme("Skip setting null Residency for " + params['id'])
                 res_null_skipped_count += 1
 
-        # Update Meal Plan separately so updates are only run if value is set
-        # FOOD_PLAN should never be set to null by this script
-        if resident['meal_plan']:
+        # Update Meal Plan if specified
+        if 'push_mealplan' in config and config['push_mealplan']:
+            if resident['meal_plan']:
+                params.update(resident['meal_plan'])
+            else:
+                params['MEAL_PLAN'] = None
             if verbose:
                 sch_client.printme("Updating meal plan for " + params['id'], ": ")
                 sch_client.printme(json.dumps(resident['meal_plan']))
-            params['FOOD_PLAN'] = resident['meal_plan']['FOOD_PLAN']
+            params['FOOD_PLAN'] = resident['meal_plan']['FOOD_PLAN'] if resident['meal_plan'] else None
             query, query_params = sch_client.prepare_query(mealplan_update, params)
             meal_update_count += cursor.execute(query, *query_params).rowcount
 
