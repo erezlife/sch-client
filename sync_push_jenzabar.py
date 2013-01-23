@@ -52,8 +52,7 @@ SET ID_NUM = NULL,
     JOB_TIME = GETDATE(),
     JOB_NAME = 'sch.import_residency',
     USER_NAME = 'SCH',
-    ROOM_ASSIGN_STS = 'U',
-    ROOM_TYPE = NULL
+    ROOM_ASSIGN_STS = 'U'
 WHERE SESS_CDE = $%$SESS_CDE$%$
 AND ID_NUM = $%$id$%$"""
 
