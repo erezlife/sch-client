@@ -105,9 +105,9 @@ for instance in instances:
                 params['DORM_PLAN'] = None
                 params['DORM_BUILDING'] = None
                 params['DORM_ROOM'] = None
-                params['RESIDENT_COMMUTER'] = None
+                params['RESIDENT_COMMUTER'] = 'C'
 
-                # check that we aren't overriding existing commuter status
+                # check that we aren't overriding existing alternate status
                 if row and row.RESIDENT_COMMUTER and row.RESIDENT_COMMUTER != 'R':
                     params['RESIDENT_COMMUTER'] = row.RESIDENT_COMMUTER
 
