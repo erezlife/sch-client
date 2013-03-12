@@ -8,6 +8,7 @@
   {"model": "Resident", "field": "phone"},
   {"model": "Resident", "field": "credits"},
   {"model": "ResidentInstance", "field": "enrolledCredits"},
+  {"model": "Resident", "field": "gpa"},
   {"model": "ResidentInstance", "field": "eligibleForHousing"},
   {
     "model": "ResidentInstance",
