@@ -9,7 +9,7 @@ SELECT  nm.id_num,
         COALESCE(stsd.hrs_enrolled, 0) as EnrolledCredits,
         COALESCE(stsd.career_gpa, 0) as GPA,
         CASE WHEN c.stage IS NOT NULL AND c.stage <> 'DEP' THEN 'false' ELSE 'true' END as eligible,
-        CASE WHEN c.id_num IS NOT NULL THEN 'New' ELSE 'Returning' END as residenttype,
+        CASE WHEN stsd.id_num IS NOT NULL AND stsd.career_hrs_earned > 0 THEN 'Returning' ELSE 'New' END as residenttype,
         CASE WHEN ext.udef_1a_1 = 'A' THEN 'true' ELSE 'false' END as ApprovedException
 FROM name_master nm
 INNER JOIN biograph_master bm
