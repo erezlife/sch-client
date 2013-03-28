@@ -92,7 +92,7 @@ def set_residents_batch(api, iterate, columns, params, batch_size=50):
     while True:
         data = []
         current_row = 0
-        while len(data) < batch_size:    
+        while len(data) < batch_size:
             row = iterate()
             if not row: break
             if len(row) != len(columns):
