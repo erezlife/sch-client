@@ -91,9 +91,12 @@ def set_residents_batch(api, iterate, columns, params, batch_size=50):
     filtered_columns = list(filter(col_filter, columns))
     while True:
         data = []
-        while len(data) < batch_size:
+        current_row = 0
+        while len(data) < batch_size:    
             row = iterate()
             if not row: break
+            if len(row) != len(columns):
+                raise Exception('Number of fields in CSV on record ' + (total + current_row) + 'does not match manifest')
             record = []
             for i, val in enumerate(row):
                 if col_filter(columns[i]):
@@ -101,6 +104,7 @@ def set_residents_batch(api, iterate, columns, params, batch_size=50):
                         val = str(val).rstrip()
                     record.append(val)
             data.append(record)
+            current_row += 1
 
         batch_count += 1
         printme("saving batch " + str(batch_count), "")
