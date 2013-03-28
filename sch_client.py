@@ -96,7 +96,7 @@ def set_residents_batch(api, iterate, columns, params, batch_size=50):
             row = iterate()
             if not row: break
             if len(row) != len(columns):
-                raise Exception('Number of fields in CSV on record ' + (total + current_row) + 'does not match manifest')
+                raise Exception('Number of fields in CSV on record ' + str(total + current_row) + 'does not match manifest')
             record = []
             for i, val in enumerate(row):
                 if col_filter(columns[i]):
