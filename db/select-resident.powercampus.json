@@ -36,5 +36,7 @@
   {"ignore": true},
   {"ignore": true},
   {"ignore": true},
-  {"ignore": true}
+  {"ignore": true},
+  {"model": "Resident", "field": "credits"},
+  {"model": "Resident", "field": "gpa"}
 ]

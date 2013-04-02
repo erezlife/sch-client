@@ -44,5 +44,7 @@
       "1": true,
       "0": false
     }
-  }
+  },
+  {"model": "Resident", "field": "credits"},
+  {"model": "Resident", "field": "gpa"}
 ]
