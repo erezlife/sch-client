@@ -18,9 +18,9 @@ SELECT  PEOPLE.PEOPLE_ID,
         StopLIstHolds.STOP_REASON,
         StopLIstHolds.STOP_DATE,
         StopLIstHolds.CLEARED_DATE,
-        StopLIstHolds.CLEARED,
-        COALESCE(gpa.total_credits, 0) as total_credits,
-        gpa.gpa
+        StopLIstHolds.CLEARED
+        -- COALESCE(gpa.total_credits, 0) as total_credits,
+        -- gpa.gpa
 FROM PEOPLE AS PEOPLE
 LEFT JOIN ADDRESS AS ADDRESS
   ON PEOPLE.PEOPLE_CODE_ID = ADDRESS.PEOPLE_ORG_CODE_ID
@@ -59,8 +59,8 @@ LEFT OUTER JOIN
   ) AS StopLIstHolds ON PEOPLE.PEOPLE_CODE_ID = StopLIstHolds.PEOPLE_CODE_ID
 LEFT JOIN PersonPhone phone
   ON phone.PersonPhoneId = PEOPLE.PrimaryPhoneId
-LEFT JOIN vwuArgosStudentGPAOverall gpa
-  ON gpa.people_code_id = p.people_code_id
+-- LEFT JOIN vwuArgosStudentGPAOverall gpa
+--   ON gpa.people_code_id = p.people_code_id
 WHERE (ACADEMIC.PRIMARY_FLAG = 'Y')
 AND (ACADEMIC.ACADEMIC_SESSION = '')
 AND (ADDRESS.ADDRESS_TYPE = 'CAMP')
