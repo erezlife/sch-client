@@ -47,5 +47,13 @@
   },
   {"model": "ResidentInstance", "field": "enrolledCredits"},
   {"model": "Resident", "field": "credits"},
-  {"model": "Resident", "field": "gpa"}
+  {"model": "Resident", "field": "gpa"},
+  {
+    "model": "ResidentInstance",
+    "field": "accountHold",
+    "transforms": {
+      "1": true,
+      "0": false
+    }
+  },
 ]

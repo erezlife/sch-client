@@ -24,7 +24,8 @@ SELECT  p.PEOPLE_ID,
     a.EligibleForHousing,
     a.credits as enrolledCredits,
     COALESCE(gpa.total_credits, 0) as total_credits,
-    gpa.gpa
+    gpa.gpa,
+    CASE WHEN sl.PEOPLE_CODE_ID IS NOT NULL THEN 1 ELSE 0 END as hold
 FROM  [dbo].[PersonUser] pu
 INNER JOIN [dbo].[PEOPLE] p
 ON pu.PersonId = p.PersonId
@@ -67,6 +68,8 @@ INNER JOIN (
 INNER JOIN Address addr
   ON addr.people_org_code_id = p.people_code_id
   AND addr.ADDRESS_TYPE = '00'
+LEFT JOIN vwuStoplists sl
+  ON sl.PEOPLE_CODE_ID = p.PEOPLE_CODE_ID
 LEFT JOIN CODE_COUNTRY cc
   ON cc.CODE_VALUE = addr.COUNTRY
 LEFT JOIN PersonPhone phone
