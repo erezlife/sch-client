@@ -45,6 +45,7 @@
       "0": false
     }
   },
+  {"model": "ResidentInstance", "field": "enrolledCredits"},
   {"model": "Resident", "field": "credits"},
   {"model": "Resident", "field": "gpa"}
 ]
