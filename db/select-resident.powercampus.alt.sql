@@ -22,6 +22,7 @@ SELECT  p.PEOPLE_ID,
     addr.ZIP_CODE,
     cc.LONG_DESC,
     a.EligibleForHousing,
+    a.credits as enrolledCredits,
     COALESCE(gpa.total_credits, 0) as total_credits,
     gpa.gpa
 FROM  [dbo].[PersonUser] pu
@@ -34,6 +35,7 @@ INNER JOIN (
       a.ENROLL_SEPARATION,
       a.POPULATION,
       a.CLASS_LEVEL,
+      a.credits,
       d.GENDER,
       CASE WHEN
       ((a.[APPLICATION_FLAG] = 'Y' AND a.[APP_STATUS] = '8' AND a.[FULL_PART] = 'F') -- Incoming students
