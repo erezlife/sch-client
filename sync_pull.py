@@ -35,5 +35,6 @@ for instance in instances:
     num_updated, num_skipped, missing_records = execute_pull(api, connection, sql, instance, columns)
     sch_client.printme("Records updated: " + str(num_updated))
     sch_client.printme("Records skipped: " + str(num_skipped))
+    sch_client.printme("Missing records: " + str(missing_records))
 
 sch_client.printme('------ End sync_pull ------')
