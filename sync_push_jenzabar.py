@@ -404,6 +404,26 @@ for instance in instances:
             params = copy(instance)
             params['id'] = resident['id']
 
+
+            # get the stud_sess_assign record and/or insert if it doesn't exist
+            query, query_params = sch_client.prepare_query(stud_sess_assign_select, params)
+            cursor.execute(query, *query_params)
+            stud_row = cursor.fetchone()
+
+            params['ROOM_ASSIGN_STS'] = 'U'
+            params['RESID_COMMUTER_STS'] = None
+            params['ROOM_TYPE'] = None
+            # insert stud_sess_assign record if not found
+            if not stud_row:
+                if resident_exists(params['id']):
+                    query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
+                    cursor.execute(query, *query_params)
+                    stud_sess_assign_count_insert += 1
+                else:  # resident doesn't exist in master table
+                    resident_missing.add(params['id'])
+
+
+            # update resident status and room
             if resident['residency']:
                 bldg_loc_cde = resident['residency']['BLDG_LOC_CDE']
                 bldg_cde = resident['residency']['BLDG_CDE']
@@ -450,29 +470,12 @@ for instance in instances:
                 if verbose:
                     sch_client.printme("Setting null STUD_SESS_ASSIGN for " + params['id'])
 
-                query, query_params = sch_client.prepare_query(stud_sess_assign_select, params)
-                cursor.execute(query, *query_params)
-                stud_row = cursor.fetchone()
-
-                params['ROOM_ASSIGN_STS'] = 'U'
-                params['RESID_COMMUTER_STS'] = None
-                params['ROOM_TYPE'] = None
-
                 # set room_assign_sts to unset if resident previously marked as a resident
                 rowcount = 0
                 if stud_row and stud_row.RESID_COMMUTER_STS == 'R':
                     query, query_params = sch_client.prepare_query(stud_sess_assign_update, params)
                     rowcount = cursor.execute(query, *query_params).rowcount
                     stud_sess_assign_count_update += rowcount
-
-                # insert stud_sess_assign record if not found
-                if not stud_row:
-                    if resident_exists(params['id']):
-                        query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
-                        cursor.execute(query, *query_params)
-                        stud_sess_assign_count_insert += 1
-                    else:  # resident doesn't exist in master table
-                        resident_missing.add(params['id'])
 
                 res_null_count += rowcount
 
