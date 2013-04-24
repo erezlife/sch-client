@@ -35,6 +35,7 @@ INNER JOIN (
       a.FULL_PART,
       a.ENROLL_SEPARATION,
       a.POPULATION,
+      a.APPLICATION_FLAG,
       a.CLASS_LEVEL,
       a.credits,
       d.GENDER,
