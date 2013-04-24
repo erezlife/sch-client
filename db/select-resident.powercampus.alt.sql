@@ -10,7 +10,7 @@ SELECT  p.PEOPLE_ID,
     phone.PhoneNumber,
     r.mail_slot,
     CASE WHEN a.Population = 'T' THEN 'T' ELSE (
-      CASE WHEN a.class_level = 1 THEN 'N'
+      CASE WHEN a.APPLICATION_FLAG = 'Y' THEN 'N'
       ELSE 'R' END
     ) END as ResidentType,
     a.Class_level,
