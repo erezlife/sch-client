@@ -7,6 +7,7 @@
 	"import_map": "import.csv.json",
 	"export_csv": "export.csv",
 	"deactivate_missing_residents": true,
+	"exclude_columns": ["application_canceled"],
 	"calculated_export_columns": {
 		"ResLife_BoardType": [
 			{

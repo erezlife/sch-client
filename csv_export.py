@@ -50,6 +50,7 @@ with open(csvname, 'w') as csvfile:
     residency_columns = set()
     mealplan_columns = set()
     calculated_columns = config['calculated_export_columns'] if 'calculated_export_columns' in config else {}
+    exclude_columns = config['exclude_columns'] if 'exclude_columns' in config else []
 
     instances = api.get_instances()
     resident_lists = []  # a list of residents per instance
@@ -69,7 +70,7 @@ with open(csvname, 'w') as csvfile:
         # iterate to get full set of columns
         for resident in residents:
             for key in resident:
-                if key not in ['id', 'residency', 'meal_plan', 'first_name', 'last_name']:
+                if key not in ['id', 'residency', 'meal_plan', 'first_name', 'last_name'] + exclude_columns:
                     resident_columns.add(key)
             if resident['residency']:
                 for key in resident['residency']:
