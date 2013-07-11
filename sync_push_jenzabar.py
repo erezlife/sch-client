@@ -425,9 +425,10 @@ for instance in instances:
 
             # update resident status and room
             if resident['residency']:
-                bldg_loc_cde = resident['residency']['BLDG_LOC_CDE']
-                bldg_cde = resident['residency']['BLDG_CDE']
-                room_cde = resident['residency']['ROOM_CDE']
+                residency = resident['residency']
+                bldg_loc_cde = residency['BLDG_LOC_CDE'] if 'BLDG_LOC_CDE' in residency else None
+                bldg_cde = residency['BLDG_CDE'] if 'BLDG_CDE' in residency else None
+                room_cde = residency['ROOM_CDE'] if 'ROOM_CDE' in residency else None
                 room_occupants[bldg_loc_cde][bldg_cde][room_cde].append(resident['id'])
 
                 # clear ROOM_ASSIGN data for resident (in case they were in a room we don't track)
