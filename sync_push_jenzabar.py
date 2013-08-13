@@ -423,8 +423,8 @@ for instance in instances:
                     resident_missing.add(params['id'])
 
 
-            # update resident status and room
-            if resident['residency']:
+            # update resident room assignment
+            if resident['residency'] and 'BLDG_LOC_CDE' in resident['residency']:
                 residency = resident['residency']
                 bldg_loc_cde = residency['BLDG_LOC_CDE'] if 'BLDG_LOC_CDE' in residency else None
                 bldg_cde = residency['BLDG_CDE'] if 'BLDG_CDE' in residency else None
@@ -440,11 +440,6 @@ for instance in instances:
                     sch_client.printme("Updating ROOM_ASSIGN for " + params['id'], ": ")
                     sch_client.printme(json.dumps(resident['residency']))
 
-                params['BLDG_LOC_CDE'] = None;
-                params['BLDG_CDE'] = None;
-                params['ROOM_CDE'] = None;
-                params['slot'] = None;
-
                 params.update(resident['residency'])
                 params['ROOM_TYPE'] = params['ROOM_TYPE'] if 'ROOM_TYPE' in params else None
                 query, query_params = sch_client.prepare_query(room_assign_update, params)
@@ -456,8 +451,11 @@ for instance in instances:
                     cursor.execute(query, *query_params)
                     room_assign_count_insert += 1
 
+            # update resident status in STUD_SESS_ASSIGN
+            if resident['residency']:
                 if verbose:
                     sch_client.printme("Updating STUD_SESS_ASSIGN for " + params['id'])
+                params.update(resident['residency'])
                 params['ROOM_ASSIGN_STS'] = 'A'
                 params['RESID_COMMUTER_STS'] = 'R'
                 query, query_params = sch_client.prepare_query(stud_sess_assign_update, params)
