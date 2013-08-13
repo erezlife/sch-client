@@ -439,6 +439,12 @@ for instance in instances:
                 if verbose:
                     sch_client.printme("Updating ROOM_ASSIGN for " + params['id'], ": ")
                     sch_client.printme(json.dumps(resident['residency']))
+
+                params['BLDG_LOC_CDE'] = None;
+                params['BLDG_CDE'] = None;
+                params['ROOM_CDE'] = None;
+                params['slot'] = None;
+
                 params.update(resident['residency'])
                 params['ROOM_TYPE'] = params['ROOM_TYPE'] if 'ROOM_TYPE' in params else None
                 query, query_params = sch_client.prepare_query(room_assign_update, params)
