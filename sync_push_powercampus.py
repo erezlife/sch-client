@@ -95,9 +95,10 @@ for instance in instances:
             row = cursor.fetchone()
             not_resident = not row or row.RESIDENT_COMMUTER != 'R' and not row.DORM_CAMPUS and not row.DORM_BUILDING and not row.DORM_ROOM
             known_room = row and (row.DORM_CAMPUS, row.DORM_BUILDING, row.DORM_ROOM) in dorm_room_set
+            billcode_override = row and row.DORM_PLAN and not row.DORM_CAMPUS and not row.DORM_BUILDING and not row.DORM_ROOM
 
             # only erase residency for rooms controlled by SCH
-            if not_resident or known_room:
+            if not_resident or known_room or billcode_override:
                 if verbose:
                     sch_client.printme("Setting null Residency for " + params['id'])
 
