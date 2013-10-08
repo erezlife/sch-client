@@ -78,6 +78,10 @@ for instance in instances:
         params = instance
         params['id'] = resident['id'] if resident['id'][0] == 'P' else 'P' + resident['id']
         params['ACADEMIC_SESSION'] = config['powercampus']['push_params']['ACADEMIC_SESSION']
+        params['DORM_CAMPUS'] = None
+        params['DORM_PLAN'] = None
+        params['DORM_BUILDING'] = None
+        params['DORM_ROOM'] = None
 
         # Update Residency
         if resident['residency']:
@@ -102,10 +106,6 @@ for instance in instances:
                 if verbose:
                     sch_client.printme("Setting null Residency for " + params['id'])
 
-                params['DORM_CAMPUS'] = None
-                params['DORM_PLAN'] = None
-                params['DORM_BUILDING'] = None
-                params['DORM_ROOM'] = None
                 params['RESIDENT_COMMUTER'] = 'C'
 
                 # check that we aren't overriding existing alternate status
