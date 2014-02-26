@@ -81,7 +81,7 @@ def prepare_query(query, params):
     return query, param_vals
 
 
-def set_residents_batch(api, iterate, columns, params, batch_size=50):
+def set_residents_batch(api, iterate, columns, params, batch_size=10):
     updated = 0
     skipped = 0
     total = 0

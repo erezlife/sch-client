@@ -129,7 +129,7 @@ with open(csvname, 'r') as csvfile:
                     resident_ids[instance_id] = [resident_id]
         return resident
 
-    num_updated, num_skipped, missing_records = sch_client.set_residents_batch(api, iterate, columns, {}, 50)
+    num_updated, num_skipped, missing_records = sch_client.set_residents_batch(api, iterate, columns, {}, 10)
 
     num_deactivated = 0
     if deactivate_missing:
