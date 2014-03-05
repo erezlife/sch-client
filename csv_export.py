@@ -4,6 +4,7 @@ import sch_client
 import json
 import os
 import csv
+import sys
 from copy import copy
 
 
@@ -40,7 +41,15 @@ def get_calculated_columns(resident, calculated_columns):
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 sch_client.initLogging(__location__, 'csv_export')
 sch_client.printme('------ Begin csv_export ------')
-config = json.load(open(os.path.join(__location__, 'config.json')))
+
+# load config file from first argument if passed
+if len(sys.argv) > 1:
+    configFile = sys.argv[1]
+else:
+    configFile = os.path.join(__location__, 'config.json')
+
+config = json.load(open(configFile))
+
 api = sch_client.API(config['uri'], config['key'], config['secret'])
 
 csvname = config['export_csv'] if 'export_csv' in config else 'export.csv'
