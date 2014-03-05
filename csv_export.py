@@ -39,8 +39,7 @@ def get_calculated_columns(resident, calculated_columns):
 
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-sch_client.initLogging(__location__, 'csv_export')
-sch_client.printme('------ Begin csv_export ------')
+sch_client.init_logging(__location__, 'csv_export')
 
 # load config file from first argument if passed
 if len(sys.argv) > 1:
@@ -50,7 +49,12 @@ else:
 
 config = json.load(open(configFile))
 
-api = sch_client.API(config['uri'], config['key'], config['secret'])
+# initialize sch api library
+identifier = config['identifier'] if 'identifier' in config else None
+api = sch_client.API(config['uri'], config['key'], config['secret'], identifier)
+
+# begin export process
+api.printme('------ Begin csv_export ------')
 
 csvname = config['export_csv'] if 'export_csv' in config else 'export.csv'
 with open(csvname, 'w') as csvfile:
@@ -66,15 +70,15 @@ with open(csvname, 'w') as csvfile:
     writer = csv.writer(csvfile, dialect='excel')
 
     for instance in instances:
-        sch_client.printme("Processing instance", ' ')
+        api.printme("Processing instance", ' ')
         for key in instance:
-            sch_client.printme(key + "='" + instance[key], "' ")
-        sch_client.printme()
+            api.printme(key + "='" + instance[key], "' ")
+        api.printme()
         query = copy(instance)
         query['include_name'] = 1
         residents = api.get_residents(query)
         resident_lists.append(residents)
-        sch_client.printme("Total Residents: " + str(len(residents)))
+        api.printme("Total Residents: " + str(len(residents)))
 
         # iterate to get full set of columns
         for resident in residents:
@@ -141,4 +145,4 @@ with open(csvname, 'w') as csvfile:
 
         instance_num += 1
 
-sch_client.printme('------ End csv_export ------')
+api.printme('------ End csv_export ------')

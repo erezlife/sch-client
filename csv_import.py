@@ -8,8 +8,7 @@ import sys
 
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-sch_client.initLogging(__location__, 'csv_import')
-sch_client.printme('------ Begin csv_import ------')
+sch_client.init_logging(__location__, 'csv_import')
 
 # load config file from first argument if passed
 if len(sys.argv) > 1:
@@ -19,8 +18,14 @@ else:
 
 config = json.load(open(configFile))
 
+# initialize sch api library
+identifier = config['identifier'] if 'identifier' in config else None
+api = sch_client.API(config['uri'], config['key'], config['secret'], identifier)
+
+# begin import process
+api.printme('------ Begin csv_import ------')
+
 columns = json.load(open(os.path.join(__location__, config['import_map'])))
-api = sch_client.API(config['uri'], config['key'], config['secret'])
 
 csvname = config['import_csv'] if 'import_csv' in config else 'import.csv'
 has_header = config['import_csv_header'] if 'import_csv_header' in config else False
@@ -155,22 +160,22 @@ with open(csvname, 'r') as csvfile:
             instance_id = instance['id']
             if instance_id in resident_ids and len(resident_ids[instance_id]) > 0:
                 del instance['id']
-                sch_client.printme("deactivating records for", ' ')
+                api.printme("deactivating records for", ' ')
                 for key in instance:
-                    sch_client.printme(key + "='" + instance[key], "' ")
-                sch_client.printme()
+                    api.printme(key + "='" + instance[key], "' ")
+                api.printme()
 
                 result = api.set_residents_inactive(resident_ids[instance_id], instance)
                 num_deactivated += result['updated']
 
-    sch_client.printme("Records updated: " + str(num_updated))
-    sch_client.printme("Records skipped: " + str(num_skipped))
-    sch_client.printme("Records deactivated: " + str(num_deactivated))
+    api.printme("Records updated: " + str(num_updated))
+    api.printme("Records skipped: " + str(num_skipped))
+    api.printme("Records deactivated: " + str(num_deactivated))
     if len(missing_records) > 0:
-        sch_client.printme("Missing records:")
+        api.printme("Missing records:")
         for model, conditions in missing_records.items():
-            sch_client.printme("  " + model, ": ")
+            api.printme("  " + model, ": ")
             for field, value in conditions.items():
-                sch_client.printme(field + " = '" + value, "' ")
-            sch_client.printme()
-sch_client.printme('------ End csv_import ------')
+                api.printme(field + " = '" + value, "' ")
+            api.printme()
+api.printme('------ End csv_import ------')

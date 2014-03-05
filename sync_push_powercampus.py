@@ -6,7 +6,7 @@ import pyodbc
 import os
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-sch_client.initLogging(__location__, 'sync_push_powercampus')
+sch_client.init_logging(__location__, 'sync_push_powercampus')
 sch_client.printme('------ Begin sync_push_powercampus ------')
 config = json.load(open(os.path.join(__location__, 'config.json')))
 api = sch_client.API(config['uri'], config['key'], config['secret'])

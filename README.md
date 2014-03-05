@@ -3,7 +3,7 @@ This repository contains a library to interact with the SimpleCampusHousing Inte
 
 sch_client.py is the core Python library used to interact with the SimpleCampusHousing Integration API
 
-The executable scripts expect a configuration file named config.json to exist in the same directory. All configuration and runtime options are set through this file. Sample config files are included for reference.
+The executable scripts expect a configuration file named config.json to exist in the same directory. All configuration and runtime options are set through this file. Sample config files are included for reference. Optionally, the location of the config file can be passed as the first command line argument to use instead of the default config.json.
 
 ## Included ERP Sample Scripts
 Sample integration scripts for the following ERP systems are included

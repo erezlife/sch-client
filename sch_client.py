@@ -5,6 +5,7 @@ import json
 import sys
 import logging
 import traceback
+import uuid
 from copy import copy
 
 if sys.version_info < (3, 0):
@@ -16,7 +17,7 @@ else:
 # Global Logger
 logger = logging.getLogger('sch_client')
 log_buffer = ''
-
+operation_id = uuid.uuid1()
 
 def log_handler(type, value, tb):
     global logger
@@ -25,10 +26,10 @@ def log_handler(type, value, tb):
     logger.critical(trace)
 
 
-def initLogging(dir, name):
+def init_logging(dir, name):
     global logger
     hdlr = logging.FileHandler(dir + '/' + name + '.log')
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s - ' + operation_id.hex + ' - %(message)s')
     hdlr.setFormatter(formatter)
     logger.addHandler(hdlr)
     logger.setLevel(logging.INFO)
@@ -107,8 +108,8 @@ def set_residents_batch(api, iterate, columns, params, batch_size=10):
             current_row += 1
 
         batch_count += 1
-        printme("saving batch " + str(batch_count), "")
-        printme(" records " + str(total + 1) + " - " + str(batch_size + total))
+        self.printme("saving batch " + str(batch_count), "")
+        self.printme(" records " + str(total + 1) + " - " + str(batch_size + total))
         result = api.set_residents(filtered_columns, data, params)
         updated += result['updated']
         skipped += result['skipped']
@@ -127,14 +128,18 @@ class NestedDict(dict):
 
 class API:
 
-    def __init__(self, uri=None, key=None, secret=None):
-        if(not uri or not key or not secret):
-            config = json.load(open('config.json'))
-
-        self.uri = uri if uri else config['uri']
-        self.key = key if key else config['key']
-        self.secret = secret if secret else config['secret']
+    def __init__(self, uri, key, secret, identifier=None):
+        self.identifier = identifier
+        self.uri = uri
+        self.key = key
+        self.secret = secret
         self.auth()
+
+    # call global printme logging function with config identifier inserted if defined
+    def printme(self, s='', end='\n'):
+        if self.identifier:
+            s = self.identifier + ': ' + str(s);
+        printme(s, end)
 
     def get_residents(self, options):
         options = copy(options)
@@ -144,8 +149,8 @@ class API:
         try:
             self.response = urlopen(uri)
         except Exception as e:
-            printme(e)
-            printme(e.read().decode('utf8'))
+            self.printme(e)
+            self.printme(e.read().decode('utf8'))
             exit(1)
 
         return json.loads(self.response.read().decode('utf8'))
@@ -165,17 +170,17 @@ class API:
         try:
             self.response = urlopen(req)
         except Exception as e:
-            printme(e)
-            printme(e.read().decode('utf8'))
+            self.printme(e)
+            self.printme(e.read().decode('utf8'))
             exit(1)
 
         response = self.response.read().decode('utf8')
         try:
             json_response = json.loads(response)
         except Exception:
-            printme("Unable to parse JSON output from API.")
-            printme("Response:")
-            printme(response)
+            self.printme("Unable to parse JSON output from API.")
+            self.printme("Response:")
+            self.printme(response)
             exit(1)
 
         return json_response
@@ -196,17 +201,17 @@ class API:
         try:
             self.response = urlopen(req)
         except Exception as e:
-            printme(e)
-            printme(e.read().decode('utf8'))
+            self.printme(e)
+            self.printme(e.read().decode('utf8'))
             exit(1)
 
         response = self.response.read().decode('utf8')
         try:
             json_response = json.loads(response)
         except Exception:
-            printme("Unable to parse JSON output from API.")
-            printme("Response:")
-            printme(response)
+            self.printme("Unable to parse JSON output from API.")
+            self.printme("Response:")
+            self.printme(response)
             exit(1)
 
         return json_response
@@ -218,8 +223,8 @@ class API:
         try:
             self.response = urlopen(uri)
         except Exception as e:
-            printme(e)
-            printme(e.read().decode('utf8'))
+            self.printme(e)
+            self.printme(e.read().decode('utf8'))
             exit(1)
 
         return json.loads(self.response.read().decode('utf8'))
@@ -233,8 +238,8 @@ class API:
         try:
             self.response = urlopen(uri)
         except Exception as e:
-            printme(e)
-            printme(e.read().decode('utf8'))
+            self.printme(e)
+            self.printme(e.read().decode('utf8'))
             exit(1)
 
         instances = json.loads(self.response.read().decode('utf8'))
@@ -253,8 +258,8 @@ class API:
         try:
             self.response = urlopen(req)
         except Exception as e:
-            printme(e)
-            printme(e.read().decode('utf8'))
+            self.printme(e)
+            self.printme(e.read().decode('utf8'))
             exit(1)
 
         self.token = json.loads(self.response.read().decode('utf8'))['token']

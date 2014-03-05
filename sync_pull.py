@@ -18,7 +18,7 @@ def execute_pull(api, conn, query, params, columns, batch_size=50):
 
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-sch_client.initLogging(__location__, 'sync_pull')
+sch_client.init_logging(__location__, 'sync_pull')
 sch_client.printme('------ Begin sync_pull ------')
 config = json.load(open(os.path.join(__location__, 'config.json')))
 sql = open(os.path.join(__location__, config['pull_sql'])).read()
