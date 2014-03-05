@@ -50,9 +50,7 @@ with open(csvname, 'r') as csvfile:
     if deactivate_missing:
         instances = api.get_instances(True, True)
 
-    # given a resident and a rule, determines if that resident satisfies the rule
-    def match_rule(rule, resident):
-        field_name = rule['field']
+    def get_field_value(resident, field_name):
         try:
             value = resident[named_columns[field_name]]
         except KeyError:
@@ -64,19 +62,30 @@ with open(csvname, 'r') as csvfile:
         except ValueError:
             pass
 
+        return value
+
+    # given a resident and a rule, determines if that resident satisfies the rule
+    def match_rule(rule, resident):
+        value = get_field_value(resident, rule['field'])
+
+        if 'comparison_field' in rule:
+            comparison_value = get_field_value(resident, rule['comparison_field'])
+        else:
+            comparison_value = rule['value']
+
         operator = rule['operator'] if 'operator' in rule else 'EQ'
         if operator == 'EQ':
-            return value == rule['value']
+            return value == comparison_value
         elif operator == 'LT':
-            return value < rule['value']
+            return value < comparison_value
         elif operator == 'LTE':
-            return value <= rule['value']
+            return value <= comparison_value
         elif operator == 'GT':
-            return value > rule['value']
+            return value > comparison_value
         elif operator == 'GTE':
-            return value >= rule['value']
+            return value >= comparison_value
         elif operator == 'NE':
-            return value != rule['value']
+            return value != comparison_value
         else:
             raise Exception("Operator '" + operator + "' not defined")
 
