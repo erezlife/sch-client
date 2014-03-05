@@ -41,7 +41,7 @@ Each condition is a object with the following keys:
 Rule dictionaries for conditions expect the following keys:
 * _field_ - The name of the input field to check. This is either the header name (if headers exist) or the value of the 'name' attribute in the import_map
 * _value_ - The value to evaluate against the field. (e.g. If _field_ for this record matches _value_ then the rule evaluates to true)
-* _comparison\_field_ - Name of input field to use in comparison. Use in place of _value_ to compare two fields directly. (e.g. If _field_ for this record matches _comparison_field_ then the rule evaluates to true)
+* *comparison_field* - Name of input field to use in comparison. Use in place of _value_ to compare two fields directly. (e.g. If _field_ for this record matches _comparison_field_ then the rule evaluates to true)
 * _operator_ - Optional operator to specify when evaluating the field value. (e.g. 'NE', 'GT', 'LTE', etc) 'EQ' is the default. In the case of operators that are not commutative, _field_ is the first operand.
 
 ## API Debug Reference
