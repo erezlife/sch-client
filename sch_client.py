@@ -137,7 +137,7 @@ class API:
 
     # call global printme logging function with config identifier inserted if defined
     def printme(self, s='', end='\n'):
-        fresh_print = self.last_print is None or self.last_print is not None and self.last_print.endswith("\n")
+        fresh_print = not hasattr(self, 'last_print') or self.last_print is not None and self.last_print.endswith("\n")
         if self.identifier and fresh_print:
             s = self.identifier + ': ' + str(s);
         self.last_print = s;
