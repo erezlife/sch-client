@@ -108,8 +108,8 @@ def set_residents_batch(api, iterate, columns, params, batch_size=10):
             current_row += 1
 
         batch_count += 1
-        self.printme("saving batch " + str(batch_count), "")
-        self.printme(" records " + str(total + 1) + " - " + str(batch_size + total))
+        api.printme("saving batch " + str(batch_count), "")
+        api.printme(" records " + str(total + 1) + " - " + str(batch_size + total))
         result = api.set_residents(filtered_columns, data, params)
         updated += result['updated']
         skipped += result['skipped']
