@@ -137,8 +137,10 @@ class API:
 
     # call global printme logging function with config identifier inserted if defined
     def printme(self, s='', end='\n'):
-        if self.identifier:
+        fresh_print = self.last_print is None self.last_print is not None and self.last_print.endswith("\n")
+        if self.identifier and fresh_print:
             s = self.identifier + ': ' + str(s);
+        self.last_print = s;
         printme(s, end)
 
     def get_residents(self, options):
