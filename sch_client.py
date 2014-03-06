@@ -140,7 +140,7 @@ class API:
         fresh_print = not hasattr(self, 'last_print') or self.last_print is not None and self.last_print.endswith("\n")
         if self.identifier and fresh_print:
             s = self.identifier + ': ' + str(s);
-        self.last_print = s;
+        self.last_print = s + end;
         printme(s, end)
 
     def get_residents(self, options):
