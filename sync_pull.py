@@ -6,7 +6,7 @@ import pyodbc
 import os
 
 
-def execute_pull(api, conn, query, params, columns, batch_size=50):
+def execute_pull(api, conn, query, params, columns, batch_size=10):
     cursor = conn.cursor()
     query, query_params = sch_client.prepare_query(query, params)
     cursor.execute(query, *query_params)
