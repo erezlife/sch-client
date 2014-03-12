@@ -1,4 +1,19 @@
 [
+  {
+    "model": "ResidentInstance",
+    "field": "instance",
+    "assnExtLookupField": "YR_CDE"
+  },
+  {
+    "model": "ResidentInstance",
+    "field": "instance",
+    "assnExtLookupField": "TRM_CDE"
+  },
+  {
+    "model": "ResidentInstance",
+    "field": "instance",
+    "assnExtLookupField": "SESS_CDE"
+  },
   {"name": "id"},
   {"model": "Resident", "field": "firstName"},
   {"model": "Resident", "field": "lastName"},
