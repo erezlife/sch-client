@@ -16,7 +16,7 @@ def get_field_value(resident, field):
     elif resident['residency'] and field in resident['residency']:
         value = resident['residency'][field]
     elif resident['meal_plan'] and field in resident['meal_plan']:
-        value = resident['residency'][field]
+        value = resident['meal_plan'][field]
     return value
 
 
