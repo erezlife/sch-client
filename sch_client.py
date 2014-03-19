@@ -157,12 +157,18 @@ class API:
 
         return json.loads(self.response.read().decode('utf8'))
 
+    def json_dumps(self, options):
+        if hasattr(self, 'input_encoding'):
+            return json.dumps(options, encoding=self.input_encoding).decode(self.input_encoding).encode('utf8')
+        else:
+            return json.dumps(options).encode('utf8')
+
     def set_residents(self, columns, data, options):
         options = copy(options)
         options['token'] = self.token
         options['columns'] = columns
         options['data'] = data
-        req_data = json.dumps(options).encode('utf8')
+        req_data = self.json_dumps(options)
         uri = self.uri + '/resident'
 
         req = create_request(uri, req_data)
@@ -193,7 +199,7 @@ class API:
         options['residents'] = residents
         options['data'] = {'model': 'ResidentInstance', 'field': 'isActive', 'value': False}
 
-        req_data = json.dumps(options).encode('utf8')
+        req_data = self.json_dumps(options)
         uri = self.uri + '/resident/update_complement'
 
         req = create_request(uri, req_data)

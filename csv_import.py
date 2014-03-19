@@ -21,6 +21,8 @@ config = json.load(open(configFile))
 # initialize sch api library
 identifier = config['identifier'] if 'identifier' in config else None
 api = sch_client.API(config['uri'], config['key'], config['secret'], identifier)
+if 'input_encoding' in config:
+    api.input_encoding = config['input_encoding']
 
 # begin import process
 api.printme('------ Begin csv_import ------')

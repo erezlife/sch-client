@@ -6,6 +6,7 @@
 	"import_csv": "import.csv",
 	"import_csv_header": true,
 	"import_map": "import.csv.json",
+	"input_encoding": "iso-8859-1",
 	"export_csv": "export.csv",
 	"deactivate_missing_residents": true,
 	"exclude_columns": ["application_canceled"],
