@@ -5,6 +5,7 @@ import json
 import os
 import csv
 import sys
+import collections
 from copy import copy
 
 
@@ -29,7 +30,7 @@ if len(sys.argv) > 1:
 else:
     configFile = os.path.join(__location__, 'config.json')
 
-config = json.load(open(configFile))
+config = json.load(open(configFile), object_pairs_hook=collections.OrderedDict)
 
 # initialize sch api library
 identifier = config['identifier'] if 'identifier' in config else None
