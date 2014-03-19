@@ -127,6 +127,7 @@ with open(csvname, 'w') as csvfile:
                     row.append(resident['meal_plan'][key])
                 else:
                     row.append(None)
+            resident.update(instance)
             resident_dict = sch_client.FunctionDict(resident, get_field_value)
             row += sch_client.get_calculated_columns(calculated_columns.values(), resident_dict)
             writer.writerow(row)
