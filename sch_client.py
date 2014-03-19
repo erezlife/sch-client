@@ -151,7 +151,10 @@ def match_rule(rule, resident):
 
 def format_calculated_output(output, map):
     if sys.version_info < (3, 0) and isinstance(output, basestring) or sys.version_info >= (3, 0) and isinstance(output, str):
-        return string.Template(output).safe_substitute(map)
+        output = string.Template(output).safe_substitute(map)
+        if output == 'None':
+            return None
+        return output
     else:
         return output
 
