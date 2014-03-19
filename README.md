@@ -20,29 +20,24 @@ Full integration employs first running sync_pull.py followed by the applicable s
 A pair of scripts (csv_import.py & csv_export.py) provide the ability to interface with SimpleCampusHousing using comma separated values as a common interchange format without connecting directly to the ERP database. Input/output configuration is done through settings in config.json. Mapping values in the import CSV file to those compatible with SimpleCampusHousing is done using the same JSON format as the sync_pull script.
 
 ### CSV Calculated Columns
-#### Export Columns
-Additional output columns can be added to the csv export file resulting from csv_export.py. These columns are defined by the config rule 'calculated_export_columns'.  This rule expects an object where each key is the new column name. Properties of this object are arrays of rules for setting the value of the column. The first matching rule is used.
-
-Each rule is itself an object. The following keys can be used to define a rule:
-* _field_ - The name of the input field to check. If no _field_ is set, the rule acts as a default and will always match.
-* _value_ - The value of _field_ to match. If the value matches, sets the calculated column to _output_. If _value_ is not defined, _field_ being not empty is considered a match
-* _output_ - The value to output for this calculated column if the rule matches. If not defined, a blank value is used for output
-
 #### Import Columns
 Additional fields can also be calculated when importing csv files by defining the config rule 'calculated_import_columns'. This rule expects an array of dictionaries, where each object defines a new field that will be sent to the SCH API. These dictionaries should define the following keys:
 * _map_ - An object of mapping information to pass to the API
 * _conditions_ - An array of conditions to check. Conditions are checked as disjunctions (ORs). If one matches, its corresponding output will be returned and subsequent conditions will not be evaluated
-* _default_ - The default value to use if no conditions match
+* _default_ - The default value to use if no conditions match. Can optionally use python string.Template format for string substitutions. In this case $identifiers are other column names
 
 Each condition is a object with the following keys:
-* _output_ - Output value if condition rules match
+* _output_ - Output value if condition rules match. Can optionally use python string.Template format for string substitutions. In this case $identifiers are other column names
 * _rules_ - Array of rules. Each rule is a object. The conjunction (AND) of all rules forms the full condition.
 
 Rule dictionaries for conditions expect the following keys:
 * _field_ - The name of the input field to check. This is either the header name (if headers exist) or the value of the 'name' attribute in the import_map
 * _value_ - The value to evaluate against the field. (e.g. If _field_ for this record matches _value_ then the rule evaluates to true)
-* *comparison_field* - Name of input field to use in comparison. Use in place of _value_ to compare two fields directly. (e.g. If _field_ for this record matches *comparison_field* then the rule evaluates to true)
+* *comparison_field* - Name of input field to use in comparison. Use in place of _value_ to compare two fields directly. (e.g. If _field_ for this record matches *comparison_field* then the rule evaluates to true) If neither _value_ nor *comparison_field* is defined, _field_ being not empty is considered a match
 * _operator_ - Optional operator to specify when evaluating the field value. (e.g. 'NE', 'GT', 'LTE', etc) 'EQ' is the default. In the case of operators that are not commutative, _field_ is the first operand.
+
+#### Export Columns
+Additional output columns can be added to the csv export file resulting from csv_export.py. These columns are defined by the config rule 'calculated_export_columns'.  This rule expects an object where each key is the new column name. The value is an object identical to the above definition for an import column with the exception of the _map_ property which is not used.
 
 ## API Debug Reference
 The following JSON can be used to directly test the HTTP PUT method of /resident in the SCH API. Provided a valid token, this data will save sample students to SimpleCampusHousing

@@ -36,6 +36,7 @@ deactivate_missing = config['deactivate_missing_residents'] if 'deactivate_missi
 named_columns = {}
 resident_ids = {}   # dictionary of resident id lists for each instance
 
+
 with open(csvname, 'r') as csvfile:
 
     reader = csv.reader(csvfile, dialect='excel')
@@ -57,6 +58,7 @@ with open(csvname, 'r') as csvfile:
     if deactivate_missing:
         instances = api.get_instances(True, True)
 
+    # closure passed to get_calculated_columns to get a named value for the given resident
     def get_field_value(resident, field_name):
         try:
             value = resident[named_columns[field_name]]
@@ -70,50 +72,6 @@ with open(csvname, 'r') as csvfile:
             pass
 
         return value
-
-    # given a resident and a rule, determines if that resident satisfies the rule
-    def match_rule(rule, resident):
-        value = get_field_value(resident, rule['field'])
-
-        if 'comparison_field' in rule:
-            comparison_value = get_field_value(resident, rule['comparison_field'])
-        else:
-            comparison_value = rule['value']
-
-        operator = rule['operator'] if 'operator' in rule else 'EQ'
-        if operator == 'EQ':
-            return value == comparison_value
-        elif operator == 'LT':
-            return value < comparison_value
-        elif operator == 'LTE':
-            return value <= comparison_value
-        elif operator == 'GT':
-            return value > comparison_value
-        elif operator == 'GTE':
-            return value >= comparison_value
-        elif operator == 'NE':
-            return value != comparison_value
-        else:
-            raise Exception("Operator '" + operator + "' not defined")
-
-    # get a list of calculated column values for the given resident
-    def get_calculated_columns(resident):
-        outputs = []
-        for i, column in enumerate(calculated_columns):
-            outputs.append(column['default'])
-            if 'conditions' in column:
-                for condition in column['conditions']:
-                    if isinstance(condition['rules'], dict):
-                        valid = match_rule(condition['rules'], resident)
-                    else:
-                        valid = True
-                        for rule in condition['rules']:
-                            valid = valid and match_rule(rule, resident)
-                            if not valid: break
-                    if valid:
-                        outputs[i] = condition['output']
-                        break
-        return outputs
 
     # closure to get resident external id and instance id from data
     def get_resident_instance_ids(resident):
@@ -144,7 +102,8 @@ with open(csvname, 'r') as csvfile:
         except StopIteration:
             return None
 
-        resident += get_calculated_columns(resident)
+        resident_dict = sch_client.FunctionDict(resident, get_field_value)
+        resident += sch_client.get_calculated_columns(calculated_columns, resident_dict)
         if deactivate_missing:
             resident_id, instance_id = get_resident_instance_ids(resident)
             if resident_id and instance_id:

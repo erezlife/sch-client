@@ -1,49 +1,52 @@
 {
-	"identifier": "reitman-university",
-	"key": "yEm9RJSTbO0WnjXtJuGnWNldSV7F9TVI",
-	"secret": "$2a$10$HPP4hp2SA/GR6S7UsgDqjeMRnsmmea/rSF/rH/OMN02UQY5067CVi",
-	"uri": "https://test.simplecampushousing.com/api",
-	"import_csv": "import.csv",
-	"import_csv_header": true,
-	"import_map": "import.csv.json",
-	"input_encoding": "iso-8859-1",
-	"export_csv": "export.csv",
-	"deactivate_missing_residents": true,
-	"exclude_columns": ["application_canceled"],
-	"calculated_export_columns": {
-		"ResLife_BoardType": [
-			{
-				"field": "residency",
-				"output": "Resident"
-			},
-			{
-				"field": "ResLife_ImportID",
-				"output": "Off-Campus"
-			}
-		]
-	},
-	"calculated_import_columns": [
-		{
-			"map": {
-				"model": "ResidentInstance",
-				"field": "residentType",
-				"assnLookupField": "ref"
-			},
-			"conditions": [
-				{
-					"output": "Returning",
-					"rules": {"field": "type", "value": "E"}
-				},
-				{
-					"output": "Transfer",
-					"rules": [
-						{"field": "type", "value": "N"},
-						{"field": "Class", "value": "FR", "operator": "NE"},
-						{"field": "Class", "value": "FF", "operator": "NE"}
-					]
-				}
-			],
-			"default": "New"
-		}
-	]
+  "identifier": "reitman-university",
+  "key": "yEm9RJSTbO0WnjXtJuGnWNldSV7F9TVI",
+  "secret": "$2a$10$HPP4hp2SA/GR6S7UsgDqjeMRnsmmea/rSF/rH/OMN02UQY5067CVi",
+  "uri": "https://test.simplecampushousing.com/api",
+  "import_csv": "import.csv",
+  "import_csv_header": true,
+  "import_map": "import.csv.json",
+  "input_encoding": "iso-8859-1",
+  "export_csv": "export.csv",
+  "deactivate_missing_residents": true,
+  "exclude_columns": ["application_canceled"],
+  "calculated_export_columns": {
+    "ResLife_BoardType": {
+      "conditions": [
+        {
+          "output": "Resident",
+          "rules": { "field": "residency" }
+        },
+        {
+          "output": "Off-Campus",
+          "rules": { "field": "ResLife_ImportID" }
+        }
+      ],
+      "default": ""
+    }
+  },
+  "calculated_import_columns": [
+    {
+      "map": {
+        "model": "ResidentInstance",
+        "field": "residentType",
+        "assnLookupField": "ref"
+      },
+      "conditions": [
+        {
+          "output": "Returning",
+          "rules": {"field": "type", "value": "E"}
+        },
+        {
+          "output": "Transfer",
+          "rules": [
+            {"field": "type", "value": "N"},
+            {"field": "Class", "value": "FR", "operator": "NE"},
+            {"field": "Class", "value": "FF", "operator": "NE"}
+          ]
+        }
+      ],
+      "default": "New"
+    }
+  ]
 }

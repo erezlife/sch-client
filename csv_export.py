@@ -8,34 +8,16 @@ import sys
 from copy import copy
 
 
-def get_calculated_columns(resident, calculated_columns):
-    outputs = []
-    column_num = 0
-    for column in calculated_columns:
-        outputs.append(None)
-        for rule in calculated_columns[column]:
-            output = rule['output'] if 'output' in rule else None
-
-            field = rule['field'] if 'field' in rule else None
-            if not field:
-                outputs[column_num] = output
-                break
-
-            value = rule['value'] if 'value' in rule else None
-
-            field_value = None
-            if field in resident:
-                field_value = resident[field]
-            elif resident['residency'] and field in resident['residency']:
-                field_value = resident['residency'][field]
-            elif resident['meal_plan'] and field in resident['meal_plan']:
-                field_value = resident['residency'][field]
-
-            if (value and field_value == value) or (not value and field_value):
-                outputs[column_num] = output
-                break
-        column_num += 1
-    return outputs
+# function passed to get_calculated_columns to get a named value for the given resident
+def get_field_value(resident, field):
+    value = None
+    if field in resident:
+        value = resident[field]
+    elif resident['residency'] and field in resident['residency']:
+        value = resident['residency'][field]
+    elif resident['meal_plan'] and field in resident['meal_plan']:
+        value = resident['residency'][field]
+    return value
 
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -59,11 +41,13 @@ api.printme('------ Begin csv_export ------')
 csvname = config['export_csv'] if 'export_csv' in config else 'export.csv'
 with open(csvname, 'w') as csvfile:
 
+    instance_columns = set()
     resident_columns = set()
     residency_columns = set()
     mealplan_columns = set()
     calculated_columns = config['calculated_export_columns'] if 'calculated_export_columns' in config else {}
     exclude_columns = config['exclude_columns'] if 'exclude_columns' in config else []
+    exclude_default_columns = config['exclude_default_columns'] if 'exclude_default_columns' in config else False
 
     instances = api.get_instances()
     resident_lists = []  # a list of residents per instance
@@ -81,28 +65,31 @@ with open(csvname, 'w') as csvfile:
         api.printme("Total Residents: " + str(len(residents)))
 
         # iterate to get full set of columns
-        for resident in residents:
-            for key in resident:
-                if key not in ['id', 'residency', 'meal_plan', 'first_name', 'last_name'] + exclude_columns:
-                    resident_columns.add(key)
-            if resident['residency']:
-                for key in resident['residency']:
-                    residency_columns.add(key)
-            if resident['meal_plan']:
-                for key in resident['meal_plan']:
-                    mealplan_columns.add(key)
+        if not exclude_default_columns:
+            for resident in residents:
+                for key in resident:
+                    if key not in ['id', 'residency', 'meal_plan', 'first_name', 'last_name'] + exclude_columns:
+                        resident_columns.add(key)
+                if resident['residency']:
+                    for key in resident['residency']:
+                        residency_columns.add(key)
+                if resident['meal_plan']:
+                    for key in resident['meal_plan']:
+                        mealplan_columns.add(key)
 
     # sort for consistency and to place uppercase columns first
-    resident_columns = sorted(resident_columns)
-    resident_columns.insert(0, 'id')
-    resident_columns.insert(1, 'first_name')
-    resident_columns.insert(2, 'last_name')
-    residency_columns = sorted(residency_columns)
-    mealplan_columns = sorted(mealplan_columns)
+    if not exclude_default_columns:
+        resident_columns = sorted(resident_columns)
+        resident_columns.insert(0, 'id')
+        resident_columns.insert(1, 'first_name')
+        resident_columns.insert(2, 'last_name')
+        residency_columns = sorted(residency_columns)
+        mealplan_columns = sorted(mealplan_columns)
+        instance_columns = sorted(instance)
 
     # write header
     header = []
-    for key in sorted(instance):
+    for key in instance_columns:
         header.append(key)
     for key in resident_columns:
         header.append(key)
@@ -122,7 +109,7 @@ with open(csvname, 'w') as csvfile:
         # iterate to write data
         for resident in residents:
             row = []
-            for key in sorted(instance):
+            for key in instance_columns:
                 row.append(instance[key])
             for key in resident_columns:
                 if key in resident:
@@ -140,7 +127,8 @@ with open(csvname, 'w') as csvfile:
                     row.append(resident['meal_plan'][key])
                 else:
                     row.append(None)
-            row += get_calculated_columns(resident, calculated_columns)
+            resident_dict = sch_client.FunctionDict(resident, get_field_value)
+            row += sch_client.get_calculated_columns(calculated_columns.values(), resident_dict)
             writer.writerow(row)
 
         instance_num += 1

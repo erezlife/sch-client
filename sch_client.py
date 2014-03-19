@@ -6,6 +6,7 @@ import sys
 import logging
 import traceback
 import uuid
+import string
 from copy import copy
 
 if sys.version_info < (3, 0):
@@ -119,11 +120,69 @@ def set_residents_batch(api, iterate, columns, params, batch_size=10):
 
     return updated, skipped, missing_records
 
+# given a resident dictionary and a rule, determines if that resident satisfies the rule
+def match_rule(rule, resident):
+    value = resident[rule['field']]
 
-class NestedDict(dict):
+    if 'comparison_field' in rule:
+        comparison_value = resident[rule['comparison_field']]
+    elif 'value' in rule:
+        comparison_value = rule['value']
+    else:
+        # if no value/comparison_field is defined, field value being not empty passes rule
+        return bool(value)
+
+    # normal case, compare field value
+    operator = rule['operator'] if 'operator' in rule else 'EQ'
+    if operator == 'EQ':
+        return value == comparison_value
+    elif operator == 'LT':
+        return value < comparison_value
+    elif operator == 'LTE':
+        return value <= comparison_value
+    elif operator == 'GT':
+        return value > comparison_value
+    elif operator == 'GTE':
+        return value >= comparison_value
+    elif operator == 'NE':
+        return value != comparison_value
+    else:
+        raise Exception("Operator '" + operator + "' not defined")
+
+def format_calculated_output(output, map):
+    if sys.version_info < (3, 0) and isinstance(output, basestring) or sys.version_info >= (3, 0) and isinstance(output, str):
+        return string.Template(output).safe_substitute(map)
+    else:
+        return output
+
+# get a list of calculated column values for the given resident dictionary
+def get_calculated_columns(calculated_columns, resident):
+    outputs = []
+    for i, column in enumerate(calculated_columns):
+        outputs.append(format_calculated_output(column['default'], resident))
+        if 'conditions' in column:
+            for condition in column['conditions']:
+                if isinstance(condition['rules'], dict):
+                    valid = match_rule(condition['rules'], resident)
+                else:
+                    valid = True
+                    for rule in condition['rules']:
+                        valid = valid and match_rule(rule, resident)
+                        if not valid: break
+                if valid:
+                    outputs[i] = format_calculated_output(condition['output'], resident)
+                    break
+    return outputs
+
+
+# Custom dictionary for getting values for the particular resident in the iteration.
+# Uses a custom function 'get_field_value' to retrieve the value from the resident object
+class FunctionDict(object):
+    def __init__(self, resident, get_field_value):
+        self.resident = resident
+        self.get_field_value = get_field_value
     def __getitem__(self, key):
-        if key in self: return self.get(key)
-        return self.setdefault(key, NestedDict())
+        return self.get_field_value(self.resident, key)
 
 
 class API:
