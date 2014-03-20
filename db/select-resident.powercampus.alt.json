@@ -1,5 +1,15 @@
 [
   {"model": "Resident", "field": "externalId"},
+  {
+    "model": "ResidentInstance",
+    "field": "instance",
+    "assnExtLookupField": "ACADEMIC_YEAR"
+  },
+  {
+    "model": "ResidentInstance",
+    "field": "instance",
+    "assnExtLookupField": "ACADEMIC_TERM"
+  },
   {"model": "Resident", "field": "email"},
   {"model": "Resident", "field": "firstName"},
   {"model": "Resident", "field": "middleName"},

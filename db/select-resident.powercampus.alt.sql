@@ -2,6 +2,8 @@
 -- Used to pull additional custom fields for Franklin College
 
 SELECT  p.PEOPLE_ID,
+    $%$ACADEMIC_YEAR$%$,
+    $%$ACADEMIC_TERM$%$,
     pu.username + '@franklincollege.edu' as email,
     p.FIRST_NAME,
     p.MIDDLE_NAME,
