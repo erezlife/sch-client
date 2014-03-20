@@ -9,6 +9,7 @@
   "input_encoding": "iso-8859-1",
   "export_csv": "export.csv",
   "deactivate_missing_residents": true,
+  "datetime_format": "%d-%b-%Y",
   "exclude_columns": ["application_canceled"],
   "calculated_export_columns": {
     "ResLife_BoardType": {

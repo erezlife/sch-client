@@ -6,19 +6,8 @@ import os
 import csv
 import sys
 import collections
+from datetime import datetime
 from copy import copy
-
-
-# function passed to get_calculated_columns to get a named value for the given resident
-def get_field_value(resident, field):
-    value = None
-    if field in resident:
-        value = resident[field]
-    elif resident['residency'] and field in resident['residency']:
-        value = resident['residency'][field]
-    elif resident['meal_plan'] and field in resident['meal_plan']:
-        value = resident['meal_plan'][field]
-    return value
 
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -35,6 +24,28 @@ config = json.load(open(configFile), object_pairs_hook=collections.OrderedDict)
 # initialize sch api library
 identifier = config['identifier'] if 'identifier' in config else None
 api = sch_client.API(config['uri'], config['key'], config['secret'], identifier)
+
+# format text for output if needed
+def format_output(output):
+    # adjust format if if value is datetime & format specified
+    if sch_client.is_string(output) and 'datetime_format' in config:
+        try:
+            output = datetime.strptime(output, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return output
+        return output.strftime(config['datetime_format'])
+    return output
+
+# function passed to get_calculated_columns to get a named value for the given resident
+def get_field_value(resident, field):
+    value = None
+    if field in resident:
+        value = resident[field]
+    elif resident['residency'] and field in resident['residency']:
+        value = resident['residency'][field]
+    elif resident['meal_plan'] and field in resident['meal_plan']:
+        value = resident['meal_plan'][field]
+    return format_output(value)
 
 # begin export process
 api.printme('------ Begin csv_export ------')
@@ -111,21 +122,21 @@ with open(csvname, 'w') as csvfile:
         for resident in residents:
             row = []
             for key in instance_columns:
-                row.append(instance[key])
+                row.append(format_output(instance[key]))
             for key in resident_columns:
                 if key in resident:
-                    row.append(resident[key])
+                    row.append(format_output(resident[key]))
                 else:
                     row.append(None)
 
             for key in residency_columns:
                 if resident['residency'] and key in resident['residency']:
-                    row.append(resident['residency'][key])
+                    row.append(format_output(resident['residency'][key]))
                 else:
                     row.append(None)
             for key in mealplan_columns:
                 if resident['meal_plan'] and key in resident['meal_plan']:
-                    row.append(resident['meal_plan'][key])
+                    row.append(format_output(resident['meal_plan'][key]))
                 else:
                     row.append(None)
             resident.update(instance)

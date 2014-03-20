@@ -149,8 +149,11 @@ def match_rule(rule, resident):
     else:
         raise Exception("Operator '" + operator + "' not defined")
 
+def is_string(value):
+    return sys.version_info < (3, 0) and isinstance(value, basestring) or sys.version_info >= (3, 0) and isinstance(value, str)
+
 def format_calculated_output(output, map):
-    if sys.version_info < (3, 0) and isinstance(output, basestring) or sys.version_info >= (3, 0) and isinstance(output, str):
+    if is_string(output):
         output = string.Template(output).safe_substitute(map)
         if output == 'None':
             return None
