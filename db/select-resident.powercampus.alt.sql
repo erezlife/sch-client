@@ -71,7 +71,14 @@ INNER JOIN (
 INNER JOIN Address addr
   ON addr.people_org_code_id = p.people_code_id
   AND addr.ADDRESS_TYPE = '00'
-LEFT JOIN vwuStoplists sl
+LEFT JOIN (
+  SELECT
+    PEOPLE_CODE_ID,
+    stoplist_code
+  FROM vwuStoplists
+  WHERE stoplist_code <> 'BTR' -- Ignore Transcript Holds
+  GROUP BY PEOPLE_CODE_ID
+) as sl
   ON sl.PEOPLE_CODE_ID = p.PEOPLE_CODE_ID
 LEFT JOIN CODE_COUNTRY cc
   ON cc.CODE_VALUE = addr.COUNTRY
