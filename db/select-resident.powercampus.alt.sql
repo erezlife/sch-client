@@ -72,9 +72,7 @@ INNER JOIN Address addr
   ON addr.people_org_code_id = p.people_code_id
   AND addr.ADDRESS_TYPE = '00'
 LEFT JOIN (
-  SELECT
-    PEOPLE_CODE_ID,
-    stoplist_code
+  SELECT PEOPLE_CODE_ID
   FROM vwuStoplists
   WHERE stoplist_code <> 'BTR' -- Ignore Transcript Holds
   GROUP BY PEOPLE_CODE_ID
