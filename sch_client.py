@@ -122,7 +122,7 @@ def set_residents_batch(api, iterate, columns, params, batch_size=10):
 
 # given a resident dictionary and a rule, determines if that resident satisfies the rule
 def match_rule(rule, resident):
-    value = resident[rule['field']]
+    value = resident[rule['field']] if rule['field'] in resident else None
 
     if 'comparison_field' in rule:
         comparison_value = resident[rule['comparison_field']]
@@ -152,6 +152,16 @@ def match_rule(rule, resident):
 def is_string(value):
     return sys.version_info < (3, 0) and isinstance(value, basestring) or sys.version_info >= (3, 0) and isinstance(value, str)
 
+# determines if a value is an iterable list type (non string)
+def is_iterable(value):
+    if not is_string(value):
+        try:
+            iter(value)
+            return True
+        except:
+            return False
+    return False
+
 def format_calculated_output(output, map):
     if is_string(output):
         output = string.Template(output).safe_substitute(map)
@@ -161,24 +171,22 @@ def format_calculated_output(output, map):
     else:
         return output
 
-# get a list of calculated column values for the given resident dictionary
-def get_calculated_columns(calculated_columns, resident):
-    outputs = []
-    for i, column in enumerate(calculated_columns):
-        outputs.append(format_calculated_output(column['default'], resident))
-        if 'conditions' in column:
-            for condition in column['conditions']:
-                if isinstance(condition['rules'], dict):
-                    valid = match_rule(condition['rules'], resident)
-                else:
-                    valid = True
-                    for rule in condition['rules']:
-                        valid = valid and match_rule(rule, resident)
-                        if not valid: break
-                if valid:
-                    outputs[i] = format_calculated_output(condition['output'], resident)
-                    break
-    return outputs
+# gets the value for the calculated column (dict) passed given the resident
+def get_calculated_column(column, resident):
+    output = format_calculated_output(column['default'], resident)
+    if 'conditions' in column:
+        for condition in column['conditions']:
+            if isinstance(condition['rules'], dict):
+                valid = match_rule(condition['rules'], resident)
+            else:
+                valid = True
+                for rule in condition['rules']:
+                    valid = valid and match_rule(rule, resident)
+                    if not valid: break
+            if valid:
+                output = format_calculated_output(condition['output'], resident)
+                break
+    return output
 
 
 # Custom dictionary for getting values for the particular resident in the iteration.
@@ -190,6 +198,17 @@ class FunctionDict(object):
     def __getitem__(self, key):
         return self.get_field_value(self.resident, key)
 
+# Recursively nested dict
+class NestedDict(dict):
+    def __getitem__(self, key):
+        if key in self: return self.get(key)
+        return self.setdefault(key, NestedDict())
+
+# Dictionary of sets
+class SetDict(dict):
+    def __getitem__(self, key):
+        if key in self: return self.get(key)
+        return self.setdefault(key, set())
 
 class API:
 
