@@ -63,7 +63,7 @@ with open(csvname, 'r') as csvfile:
         try:
             value = resident[named_columns[field_name]]
         except KeyError:
-            raise Exception("Column named '" + field_name + "' is not defined")
+            raise Exception("Column named '" + str(field_name) + "' is not defined")
 
         # convert to a float if possible, otherwise use string
         try:
