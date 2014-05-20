@@ -188,6 +188,24 @@ def get_calculated_column(column, resident):
                 break
     return output
 
+# get a list of all calculated column values for the given resident dictionary
+def get_calculated_columns(calculated_columns, resident):
+    outputs = []
+    for i, column in enumerate(calculated_columns):
+        outputs.append(format_calculated_output(column['default'], resident))
+        if 'conditions' in column:
+            for condition in column['conditions']:
+                if isinstance(condition['rules'], dict):
+                    valid = match_rule(condition['rules'], resident)
+                else:
+                    valid = True
+                    for rule in condition['rules']:
+                        valid = valid and match_rule(rule, resident)
+                        if not valid: break
+                if valid:
+                    outputs[i] = format_calculated_output(condition['output'], resident)
+                    break
+    return outputs
 
 # Custom dictionary for getting values for the particular resident in the iteration.
 # Uses a custom function 'get_field_value' to retrieve the value from the resident object
