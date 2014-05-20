@@ -215,6 +215,9 @@ class FunctionDict(object):
         self.get_field_value = get_field_value
     def __getitem__(self, key):
         return self.get_field_value(self.resident, key)
+    def __contains__(self, key):
+        val = self[key]
+        return val is not None
 
 # Recursively nested dict
 class NestedDict(dict):
