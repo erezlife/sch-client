@@ -11,6 +11,7 @@
   "deactivate_missing_residents": true,
   "datetime_format": "%d-%b-%Y",
   "exclude_columns": ["application_canceled"],
+  "export_column_order": ["SESS","YR","AWESOME","ResLife_BoardType","id","MEAL_PLAN_TYPE","BLDG","CAMPUS"],
   "calculated_export_columns": {
     "ResLife_BoardType": {
       "conditions": [
