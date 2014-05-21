@@ -87,17 +87,16 @@ with open(csvname, 'w') as csvfile:
 
 
         # iterate to get full set of columns
-        if not exclude_default_columns:
-            for resident in residents:
-                for key in resident:
+        for resident in residents:
+            for key in resident:
 
-                    # Add sub-columns in the event that key specifies a nested object
-                    # For strings, add key as column name itself grouped under 'resident'
-                    if sch_client.is_iterable(resident[key]):
-                        for column in resident[key]:
-                            columns[key].add(column)
-                    elif resident[key]:
-                        columns['resident'].add(key)
+                # Add sub-columns in the event that key specifies a nested object
+                # For strings, add key as column name itself grouped under 'resident'
+                if sch_client.is_iterable(resident[key]):
+                    for column in resident[key]:
+                        columns[key].add(column)
+                elif resident[key]:
+                    columns['resident'].add(key)
 
     # define default column ordering by sorting column sets (starting with first set defined)
     # needed for consistency and to place uppercase columns first
