@@ -59,7 +59,7 @@ api.printme('------ Begin csv_export ------')
 
 csvname = config['export_csv'] if 'export_csv' in config else 'export.csv'
 defined_column_order = True if 'export_column_order' in config else False
-export_column_order = config['export_column_order'] if defined_column_order else None
+export_column_order = config['export_column_order'] if defined_column_order else []
 
 with open(csvname, 'w') as csvfile:
 
@@ -103,7 +103,6 @@ with open(csvname, 'w') as csvfile:
     # needed for consistency and to place uppercase columns first
     if not exclude_default_columns and not defined_column_order:
         group_order = ['instance', 'resident', 'residency', 'meal_plan']
-        export_column_order = []
 
         # add other unique elements from columns dictionary
         group_order = group_order + list(set(columns.keys()) - set(group_order))
