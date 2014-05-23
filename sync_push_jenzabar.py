@@ -439,7 +439,7 @@ for instance in instances:
             room_row = cursor.fetchone()
 
             # if this room has a current assignment, clear/refresh settings
-            if room_row['ID_NUM']:
+            if room_row[0]:
                 query, query_params = sch_client.prepare_query(room_assign_clear, params)
                 cursor.execute(query, *query_params)
 
