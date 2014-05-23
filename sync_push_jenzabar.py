@@ -595,7 +595,7 @@ for instance in instances:
 
         sch_client.printme("STUD_SESS_ASSIGN updates: " + str(stud_sess_assign_count_update) + " new-inserts: " + str(stud_sess_assign_count_insert) + " missing: " + str(len(resident_missing)))
         sch_client.printme("STUD_SESS_ASSIGN MEAL_PLAN updates: " + str(mealplan_count_update))
-        sch_client.printme("REQUIREMENTS Housing App updates: " + str(housing_app_requirements_cde))
+        sch_client.printme("REQUIREMENTS Housing App updates: " + str(app_count_update))
         if(len(resident_missing) > 0):
             sch_client.printme("NAME_MASTER records not found:")
             for record in resident_missing:
