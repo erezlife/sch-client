@@ -44,6 +44,15 @@ AND BLDG_LOC_CDE = $%$BLDG_LOC_CDE$%$
 AND BLDG_CDE = $%$BLDG_CDE$%$
 AND ROOM_CDE = $%$ROOM_CDE$%$"""
 
+room_assign_select = """
+SELECT MAX(ID_NUM) AS ID_NUM
+FROM ROOM_ASSIGN
+WHERE SESS_CDE = $%$SESS_CDE$%$
+AND BLDG_LOC_CDE = $%$BLDG_LOC_CDE$%$
+AND BLDG_CDE = $%$BLDG_CDE$%$
+AND ROOM_CDE = $%$ROOM_CDE$%$
+"""
+
 room_assign_clear_resident = """
 UPDATE ROOM_ASSIGN
 SET ID_NUM = NULL,
@@ -124,6 +133,23 @@ VALUES (
     $%$ROOM_TYPE$%$,
     $%$ROOM_ASSIGN_STS$%$,
     $%$RESID_COMMUTER_STS$%$,
+    GETDATE(),
+    'sch.import_residency',
+    'SCH'
+)
+"""
+
+stud_sess_asgn_ext_insert = """
+INSERT INTO STUD_SESS_ASGN_EXT (
+    SESS_CDE,
+    ID_NUM,
+    JOB_TIME,
+    JOB_NAME,
+    USER_NAME
+)
+VALUES (
+    $%$SESS_CDE$%$,
+    $%$id$%$,
     GETDATE(),
     'sch.import_residency',
     'SCH'
@@ -281,6 +307,16 @@ VALUES (
 )
 """
 
+requirements_apps_update = """
+UPDATE REQUIREMENTS
+SET COMPLETION_STS = 'C',
+    COMPLETION_DTE_DTE = $%$application_time$%$,
+    RCV_REQ = 'Y'
+WHERE ID_NUM = $%$id$%$
+AND REQ_CDE = '$%$housing_app_requirements_cde$%$'
+AND COMPLETION_STS <> 'C'
+"""
+
 
 def resident_exists(id):
     query, query_params = sch_client.prepare_query(name_master_select, {"id": id})
@@ -300,6 +336,7 @@ for instance in instances:
     stud_sess_assign_count_update = 0
     stud_sess_assign_count_insert = 0
     mealplan_count_update = 0
+    app_count_update = 0
     sess_room_master_count_update = 0
     sess_room_master_count_insert = 0
     sess_bldg_master_count_update = 0
@@ -388,14 +425,23 @@ for instance in instances:
                 query, query_params = sch_client.prepare_query(sess_bldg_master_update, params)
                 sess_bldg_master_count_update += cursor.execute(query, *query_params).rowcount
 
-        # clear all ROOM_ASSIGN room data that exists in SCH
+        # clear all ROOM_ASSIGN room data that exists in SCH and currently has assginments
+        # do not clear rooms without assignments in Jenzabar
         for room_tuple in room_set:
             params = copy(instance)
             params['BLDG_LOC_CDE'] = room_tuple[0]
             params['BLDG_CDE'] = room_tuple[1]
             params['ROOM_CDE'] = room_tuple[2]
-            query, query_params = sch_client.prepare_query(room_assign_clear, params)
+
+            # see if anyone is in this room
+            query, query_params = sch_client.prepare_query(room_assign_select, params)
             cursor.execute(query, *query_params)
+            room_row = cursor.fetchone()
+
+            # if this room has a current assignment, clear/refresh settings
+            if room_row['ID_NUM']:
+                query, query_params = sch_client.prepare_query(room_assign_clear, params)
+                cursor.execute(query, *query_params)
 
         # update ROOM_ASSIGN and STUD_SESS_ASSIGN data for all residents in SCH
         residents = api.get_residents(instance)
@@ -419,6 +465,8 @@ for instance in instances:
                     query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
                     cursor.execute(query, *query_params)
                     stud_sess_assign_count_insert += 1
+                    query, query_params = sch_client.prepare_query(stud_sess_asgn_ext_insert, params)
+                    cursor.execute(query, *query_params)
                 else:  # resident doesn't exist in master table
                     resident_missing.add(params['id'])
 
@@ -493,6 +541,16 @@ for instance in instances:
                 rowcount = cursor.execute(query, *query_params).rowcount
                 mealplan_count_update += rowcount
 
+            # Update housing application status in requirements table if configured
+            if 'housing_app_requirements_cde' in config:
+                if resident['application_time']:
+                    params['application_time'] = resident['application_time']
+                    params['housing_app_requirements_cde'] = config['housing_app_requirements_cde']
+                    query, query_params = sch_client.prepare_query(requirements_apps_update, params)
+                    rowcount = cursor.execute(query, *query_params).rowcount
+                    app_count_update += rowcount
+
+
         # delete old roommates for bldg_loc and bldg codes we know
         bldg_loc_cdes = ','.join(map(lambda w: "'" + w + "'", bldg_loc_set))
         bldg_cdes = ','.join(map(lambda w: "'" + w + "'", bldg_set))
@@ -537,6 +595,7 @@ for instance in instances:
 
         sch_client.printme("STUD_SESS_ASSIGN updates: " + str(stud_sess_assign_count_update) + " new-inserts: " + str(stud_sess_assign_count_insert) + " missing: " + str(len(resident_missing)))
         sch_client.printme("STUD_SESS_ASSIGN MEAL_PLAN updates: " + str(mealplan_count_update))
+        sch_client.printme("REQUIREMENTS Housing App updates: " + str(housing_app_requirements_cde))
         if(len(resident_missing) > 0):
             sch_client.printme("NAME_MASTER records not found:")
             for record in resident_missing:

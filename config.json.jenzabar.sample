@@ -5,5 +5,6 @@
 	"db_connection": "DRIVER={SQL Server};SERVER=jenzabardb;DATABASE=production;UID=SCH;PWD=password",
 	"pull_sql": "db/select-resident.jenzabar.sql",
 	"pull_map": "db/select-resident.jenzabar.json",
-	"push_mealplan": true
+	"push_mealplan": true,
+	"housing_app_requirements_cde": "RSAPP"
 }
