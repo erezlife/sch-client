@@ -310,10 +310,10 @@ VALUES (
 requirements_apps_update = """
 UPDATE REQUIREMENTS
 SET COMPLETION_STS = 'C',
-    COMPLETION_DTE_DTE = GETDATE(),
+    COMPLETION_DTE_DTE = $%$application_time$%$,
     RCV_REQ = 'Y'
 WHERE ID_NUM = $%$id$%$
-AND REQ_CDE = '$%$housing_app_requirements_cde$%$'
+AND REQ_CDE = $%$housing_app_requirements_cde$%$
 AND COMPLETION_STS <> 'C'
 """
 
