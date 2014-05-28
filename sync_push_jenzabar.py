@@ -311,7 +311,11 @@ requirements_apps_update = """
 UPDATE REQUIREMENTS
 SET COMPLETION_STS = 'C',
     COMPLETION_DTE_DTE = $%$application_time$%$,
-    RCV_REQ = 'Y'
+    RCV_REQ = 'Y',
+    MIN_MET = 'Y',
+    JOB_TIME = GETDATE(),
+    JOB_NAME = 'sch.import_residency',
+    USER_NAME = 'SCH'
 WHERE ID_NUM = $%$id$%$
 AND REQ_CDE = $%$housing_app_requirements_cde$%$
 AND COMPLETION_STS <> 'C'
