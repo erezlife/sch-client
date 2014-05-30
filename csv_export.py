@@ -43,7 +43,7 @@ def format_output(output):
 
 # function passed to get_calculated_columns to get a named value for the given resident
 def get_field_value(resident, field):
-    value = None
+    value = ''
     if field in resident:
         value = resident[field]
     elif resident['residency'] and field in resident['residency']:
@@ -51,7 +51,7 @@ def get_field_value(resident, field):
     elif resident['meal_plan'] and field in resident['meal_plan']:
         value = resident['meal_plan'][field]
     elif field in calculated_columns:
-        value = sch_client.get_calculated_column(calculated_columns[field], resident)
+        value = sch_client.get_calculated_column(calculated_columns[field], sch_client.FunctionDict(resident, get_field_value))
     return format_output(value)
 
 # begin export process
