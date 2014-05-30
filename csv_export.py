@@ -43,7 +43,7 @@ def format_output(output):
 
 # function passed to get_calculated_columns to get a named value for the given resident
 def get_field_value(iteration=0):
-    recursion_limit = 3
+    recursion_limit = 16
     state = { 'iteration': iteration }
     def get(resident, field):
         value = ''
