@@ -42,17 +42,23 @@ def format_output(output):
     return output
 
 # function passed to get_calculated_columns to get a named value for the given resident
-def get_field_value(resident, field):
-    value = ''
-    if field in resident:
-        value = resident[field]
-    elif resident['residency'] and field in resident['residency']:
-        value = resident['residency'][field]
-    elif resident['meal_plan'] and field in resident['meal_plan']:
-        value = resident['meal_plan'][field]
-    elif field in calculated_columns:
-        value = sch_client.get_calculated_column(calculated_columns[field], sch_client.FunctionDict(resident, get_field_value))
-    return format_output(value)
+def get_field_value(iteration=0):
+    recursion_limit = 3
+    state = { 'iteration': iteration }
+    def get(resident, field):
+        value = ''
+        if field in resident:
+            value = resident[field]
+        elif resident['residency'] and field in resident['residency']:
+            value = resident['residency'][field]
+        elif resident['meal_plan'] and field in resident['meal_plan']:
+            value = resident['meal_plan'][field]
+        # only recursively check calculated columns if we have not done so already (resident is standard dictionary)
+        elif field in calculated_columns and state['iteration'] < recursion_limit:
+            state['iteration'] += 1
+            value = sch_client.get_calculated_column(calculated_columns[field], sch_client.FunctionDict(resident, get_field_value(state['iteration'])))
+        return format_output(value)
+    return get
 
 # begin export process
 api.printme('------ Begin csv_export ------')
@@ -133,7 +139,7 @@ with open(csvname, 'w') as csvfile:
 
             # add instance fields to resident
             resident.update(instance)
-            resident_dict = sch_client.FunctionDict(resident, get_field_value)
+            resident_dict = sch_client.FunctionDict(resident, get_field_value())
 
             row = []
             for column_name in export_column_order:
