@@ -352,15 +352,15 @@ for instance in instances:
     room_occupants = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
     sch_client.printme("Processing instance", ' ')
-    for key in instance:
-        sch_client.printme(key + "=" + instance[key], ' ')
+    for key in instance['key']:
+        sch_client.printme(key + "=" + instance['key'][key], ' ')
     sch_client.printme()
 
-    if not instance_exists(instance['SESS_CDE']):
+    if not instance_exists(instance['key']['SESS_CDE']):
         sch_client.printme('Skipping instance. Not found in Jenzabar')
     else:
         # save room data to SESS_ROOM_MASTER
-        rooms = api.get_rooms(instance)
+        rooms = api.get_rooms(instance['key'])
         room_set = set()
         bldg_loc_set = set()
         bldg_set = set()
@@ -376,7 +376,7 @@ for instance in instances:
             halls[room['BLDG_LOC_CDE']][room['BLDG_CDE']]['capacity'] += room['capacity']
             halls[room['BLDG_LOC_CDE']][room['BLDG_CDE']]['num_residents'] += room['num_residents']
 
-            params = copy(instance)
+            params = copy(instance['key'])
             params.update(room)
             params['ROOM_TYPE'] = params['ROOM_TYPE'] if 'ROOM_TYPE' in params else None
             params['occupant_gender'] = params['gender'] if params['gender'] else 'I'
@@ -424,7 +424,7 @@ for instance in instances:
                     'BLDG_CDE': bldg_cde
                 }
                 params.update(halls[bldg_loc_cde][bldg_cde])
-                params.update(instance)
+                params.update(instance['key'])
                 params['num_vacancies'] = params['capacity'] - params['num_residents']
                 query, query_params = sch_client.prepare_query(sess_bldg_master_update, params)
                 sess_bldg_master_count_update += cursor.execute(query, *query_params).rowcount
@@ -432,7 +432,7 @@ for instance in instances:
         # clear all ROOM_ASSIGN room data that exists in SCH and currently has assginments
         # do not clear rooms without assignments in Jenzabar
         for room_tuple in room_set:
-            params = copy(instance)
+            params = copy(instance['key'])
             params['BLDG_LOC_CDE'] = room_tuple[0]
             params['BLDG_CDE'] = room_tuple[1]
             params['ROOM_CDE'] = room_tuple[2]
@@ -448,10 +448,10 @@ for instance in instances:
                 cursor.execute(query, *query_params)
 
         # update ROOM_ASSIGN and STUD_SESS_ASSIGN data for all residents in SCH
-        residents = api.get_residents(instance)
+        residents = api.get_residents(instance['key'])
         sch_client.printme("Total Residents: " + str(len(residents)))
         for resident in residents:
-            params = copy(instance)
+            params = copy(instance['key'])
             params['id'] = resident['id']
 
 
@@ -560,7 +560,7 @@ for instance in instances:
         bldg_cdes = ','.join(map(lambda w: "'" + w + "'", bldg_set))
         res_ids = ','.join(map(lambda r: r['id'], filter(lambda r: r['residency'], residents)))
         if res_ids and bldg_cdes and bldg_loc_cdes:
-            query = stud_roommates_delete % (instance['SESS_CDE'], bldg_loc_cdes, bldg_cdes, res_ids)
+            query = stud_roommates_delete % (instance['key']['SESS_CDE'], bldg_loc_cdes, bldg_cdes, res_ids)
             cursor.execute(query)
 
         # insert new roommates

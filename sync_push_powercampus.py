@@ -56,11 +56,11 @@ for instance in instances:
     res_null_skipped_count = 0
     meal_update_count = 0
     sch_client.printme("Processing instance", ' ')
-    for key in instance:
-        sch_client.printme(key + "=" + instance[key], ' ')
+    for key in instance['key']:
+        sch_client.printme(key + "=" + instance['key'][key], ' ')
     sch_client.printme()
 
-    rooms = api.get_rooms(instance)
+    rooms = api.get_rooms(instance['key'])
     dorm_room_set = set()
     dorm_building_set = set()
     dorm_campus_set = set()
@@ -72,10 +72,10 @@ for instance in instances:
         dorm_building_set.add(room['DORM_BUILDING'])
         dorm_campus_set.add(room['DORM_CAMPUS'])
 
-    residents = api.get_residents(instance)
+    residents = api.get_residents(instance['key'])
     sch_client.printme("Total Residents: " + str(len(residents)))
     for resident in residents:
-        params = instance
+        params = instance['key']
         params['id'] = resident['id'] if resident['id'][0] == 'P' else 'P' + resident['id']
         params['ACADEMIC_SESSION'] = config['powercampus']['push_params']['ACADEMIC_SESSION']
         params['DORM_CAMPUS'] = None
