@@ -68,7 +68,7 @@ def create_request(*params):
         return urllib.request.Request(*params)
 
 
-def prepare_query(query, params):
+def prepare_query(query, params, placeholder = '?'):
     param_vals = []
     start = 0
     while True:
@@ -79,7 +79,7 @@ def prepare_query(query, params):
         if key not in params:
             raise Exception("key '" + key + "' from SQL not found in input parameters")
         param_vals.append(params[key])
-        query = query[:start] + '?' + query[end + 3:]
+        query = query[:start] + placeholder + query[end + 3:]
     return query, param_vals
 
 
