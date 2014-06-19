@@ -1,0 +1,14 @@
+{
+	"key": "yEm9RJSTbO0WnjXtJuGnWNldSV7F9TVI",
+	"secret": "$2a$10$HPP4hp2SA/GR6S7UsgDqjeMRnsmmea/rSF/rH/OMN02UQY5067CVi",
+	"uri": "https://test.simplecampushousing.com/api",
+	"db_connection": "SCHOUS/password@ncfdevdb1.cfr.usf.edu:1525/NCTR",
+	"pull_sql": "db/select-resident.powercampus.sql",
+	"pull_map": "db/select-resident.powercampus.json",
+	"push_mealplan": false,
+	"banner": {
+		"ASSIGN_CHANGE_CODE": "WD",
+		"ASSIGN_INACTIVE_CODE": "IN",
+		"ASSIGN_ACTIVE_CODE": "AC"
+	}
+}
