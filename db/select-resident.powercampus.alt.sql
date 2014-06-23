@@ -11,7 +11,7 @@ SELECT  p.PEOPLE_ID,
     p.BIRTH_DATE,
     phone.PhoneNumber,
     r.mail_slot,
-    CASE WHEN a.Population = 'T' THEN 'T' ELSE (
+    CASE WHEN a.Population = 'T' and a.APPLICATION_FLAG = 'Y' THEN 'T' ELSE (
       CASE WHEN a.APPLICATION_FLAG = 'Y' THEN 'N'
       ELSE 'R' END
     ) END as ResidentType,
