@@ -65,6 +65,9 @@ with open(csvname, 'r') as csvfile:
         except KeyError:
             raise Exception("Column named '" + str(field_name) + "' is not defined")
 
+        # strip whitespace
+        value = value.strip()
+
         # convert to a float if possible, otherwise use string
         try:
             value = float(value)
