@@ -78,14 +78,14 @@ with open(csvname, 'w') as csvfile:
 
     for instance in instances:
         api.printme("Processing instance", ' ')
-        for key in instance:
-            api.printme(key + "='" + instance[key], "' ")
+        for key in instance['key']:
+            api.printme(key + "='" + instance['key'][key], "' ")
 
             # add instance columns to column sets
             columns['instance'].add(key)
 
         api.printme()
-        query = copy(instance)
+        query = copy(instance['key'])
         query['include_name'] = 1
         residents = api.get_residents(query)
         resident_lists.append(residents)
@@ -138,7 +138,7 @@ with open(csvname, 'w') as csvfile:
         for resident in residents:
 
             # add instance fields to resident
-            resident.update(instance)
+            resident.update(instance['key'])
             resident_dict = sch_client.FunctionDict(resident, get_field_value())
 
             row = []
