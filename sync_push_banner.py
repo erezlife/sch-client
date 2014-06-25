@@ -4,6 +4,8 @@ import sch_client
 import json
 import cx_Oracle
 import os
+from datetime import datetime
+from copy import copy
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 sch_client.init_logging(__location__, 'sync_push_banner')
@@ -323,6 +325,7 @@ for instance in instances:
     resident_missing = set()
     app_insert_count = 0
     app_update_count = 0
+    app_deactivate_count = 0
     app_correct_count = 0
     room_update_count = 0
     room_correct_count = 0
@@ -336,8 +339,12 @@ for instance in instances:
 
     residents = api.get_residents(instance['key'])
     sch_client.printme("Total Residents: " + str(len(residents)))
+    resident_number = 0
+
+    instance_start_date = datetime.strptime(instance['start_date'], '%Y-%m-%d');
+    params = copy(instance['key'])
     for resident in residents:
-        params = instance['key']
+        resident_number += 1
 
         params['id'] = resident['id']
 
@@ -355,9 +362,120 @@ for instance in instances:
             cursor.execute(query, query_params)
             app_record = cursor.fetchone()
 
-            print app_record
+            # if ASSIGN_CODE not included in instance key, load default
+            if 'ASSIGN_ACTIVE_CODE' not in params:
+                params['ASSIGN_ACTIVE_CODE'] = config['banner']['ASSIGN_ACTIVE_CODE']
 
-            exit()
+            if 'ASSIGN_INACTIVE_CODE' not in params:
+                params['ASSIGN_INACTIVE_CODE'] = config['banner']['ASSIGN_INACTIVE_CODE']
+
+            if 'ASSIGN_CHANGE_CODE' not in params:
+                params['ASSIGN_CHANGE_CODE'] = config['banner']['ASSIGN_CHANGE_CODE']
+
+            # default ASSIGN_CODE to 'active'
+            params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
+
+            # print resident
+
+            query, query_params = sch_client.prepare_query(room_assignment_select, params, ':0')
+            cursor.execute(query, query_params)
+            room_assignment_record = cursor.fetchone()
+
+            query, query_params = sch_client.prepare_query(meal_assignment_select, params, ':0')
+            cursor.execute(query, query_params)
+            meal_assignment_record = cursor.fetchone()
+
+            # current assignments from banner
+            banner_bldg_code = room_assignment_record[1] if room_assignment_record else None
+            banner_room_number = room_assignment_record[2] if room_assignment_record else None
+            banner_meal_code = meal_assignment_record[2] if meal_assignment_record else None
+
+            # current assignments from sch
+            bldg_code = resident['residency']['BLDG_CODE'] if resident['residency'] else None
+            room_number = resident['residency']['ROOM_NUMBER'] if resident['residency'] else None
+            meal_code = resident['meal_plan']['MEAL_CODE'] if resident['meal_plan'] else None
+
+            # determine if housing has changed
+            housing_change = False
+            if banner_bldg_code != bldg_code or banner_room_number != room_number:
+                housing_change = True
+
+            # determine if meal plan has changed
+            meal_change = False
+            if banner_meal_code != meal_code:
+                meal_change = True
+
+            # set UPDATE query parameters with current assignments
+            params['BLDG_CODE'] = bldg_code
+            params['ROOM_NUMBER'] = room_number
+            params['MEAL_CODE'] = meal_code
+
+            # update application if either housing or meal assignment changed
+            if housing_change or meal_change:
+
+                if resident['residency'] and resident['meal_plan']:
+                    params['ARTP_CODE'] = 'HOME'
+                elif resident['residency']:
+                    params['ARTP_CODE'] = 'HOUS'
+                else:
+                    params['ARTP_CODE'] = 'MEAL'
+
+                # insert new application if there are changes and no application
+                if not app_record:
+                    params['FROM_TERM'] = instance['key']['TERM']
+                    if not instance['terminating_instance']:
+                        msg = sch_client.printme('Terminating Instance not mapped for Instance ' + str(instance['key']['TERM']))
+                        raise Exception(msg)
+                    params['TO_TERM'] = instance['terminating_instance']['TERM']
+
+                    query, query_params = sch_client.prepare_query(application_insert, params, ':0')
+                    cursor.execute(query, query_params)
+                    app_insert_count += cursor.rowcount
+
+                # update application if room or meal planis assigned
+                elif room_number or meal_code:
+                    query, query_params = sch_client.prepare_query(application_change_update, params, ':0')
+                    cursor.execute(query, query_params)
+                    app_update_count += cursor.rowcount
+
+                # deactivate/withdraw application if no room or meal plan is assigned
+                else:
+
+                    # use inactive code if prior to instance start
+                    if datetime.now() < instance_start_date:
+                        params['ASSIGN_CODE'] = params['ASSIGN_INACTIVE_CODE']
+                    else:
+                        params['ASSIGN_CODE'] = params['ASSIGN_CHANGE_CODE']
+
+                    query, query_params = sch_client.prepare_query(application_status_update, params, ':0')
+                    cursor.execute(query, query_params)
+                    app_deactivate_count += cursor.rowcount
+
+            else:
+                app_correct_count += 1
+
+            # deactivate and update assignment if needed
+            if housing_change:
+
+                # update old assignment if prior to term start
+                if room_assignment_record and datetime.now() < instance_start_date:
+                    foo = False
+
+                # change/withdraw old assignment before inserting new assignment
+                elif room_assignment_record:
+                    foo = False
+
+                # insert new assignment if none exists
+                # or term has already started (since old assignment has been deactivated)
+                if resident['residency'] and (
+                    not room_assignment_record or datetime.now() >= instance_start_date
+                ):
+                    foo = False
+
+
+            if resident_number >= 15:
+                print app_insert_count, app_update_count, app_deactivate_count, app_correct_count
+                exit()
 
     connection.commit()
     # sch_client.printme("Residency updates: " + str(res_update_count + res_null_count), " ")
