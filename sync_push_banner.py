@@ -164,7 +164,7 @@ VALUES (
     $%$RATE_CODE$%$,
     $%$start_date$%$,
     $%$end_date$%$,
-    $%$ASSIGN_DURATION$%$,
+    $%$assign_duration$%$,
     0,
     0,
     $%$ASSIGN_CODE$%$,
@@ -175,6 +175,29 @@ VALUES (
     'N',
     'Simple Campus',
     'SCH'
+)
+"""
+
+# update bldg/room of most recent room assignment for a student/term
+room_assignment_update = """
+UPDATE SLRRASG
+SET SLRRASG_ASCD_CODE = $%$ASSIGN_CODE$%$,
+    SLRRASG_BLDG_CODE = $%$BLDG_CODE$%$,
+    SLRRASG_ROOM_NUMBER = $%$ROOM_NUMBER$%$,
+    SLRRASG_RRCD_CODE = $%$RATE_CODE$%$,
+    SLRRASG_ASCD_DATE = SYSDATE,
+    SLRRASG_ACTIVITY_DATE = SYSDATE,
+    SLRRASG_DATA_ORIGIN = 'Simple Campus',
+    SLRRASG_USER_ID = 'SCH'
+WHERE SLRRASG_PIDM = $%$PIDM$%$
+AND SLRRASG_TERM_CODE = $%$TERM$%$
+AND SLRRASG_ASCD_CODE <> $%$ASSIGN_INACTIVE_CODE$%$
+AND SLRRASG_END_DATE = (
+    SELECT MAX(SLRRASG_END_DATE)
+    FROM SLRRASG
+    WHERE SLRRASG_PIDM = $%$PIDM$%$
+    AND SLRRASG_TERM_CODE = $%$TERM$%$
+    AND SLRRASG_ASCD_CODE <> $%$ASSIGN_INACTIVE_CODE$%$
 )
 """
 
@@ -264,7 +287,7 @@ VALUES (
     $%$RATE_CODE$%$,
     $%$start_date$%$,
     $%$end_date$%$,
-    $%$ASSIGN_DURATION$%$,
+    $%$assign_duration$%$,
     0,
     0,
     $%$ASSIGN_CODE$%$,
@@ -275,6 +298,27 @@ VALUES (
     'N',
     'Simple Campus',
     'SCH'
+)
+"""
+
+# update meal plan of most recent meal assignment for a student/term
+meal_assignment_update = """
+UPDATE SLRMASG
+SET SLRMASG_MSCD_CODE = $%$ASSIGN_CODE$%$,
+    SLRMASG_MRCD_CODE = $%$MEAL_CODE$%$,
+    SLRMASG_MSCD_DATE = SYSDATE,
+    SLRMASG_ACTIVITY_DATE = SYSDATE,
+    SLRMASG_DATA_ORIGIN = 'Simple Campus',
+    SLRMASG_USER_ID = 'SCH'
+WHERE SLRMASG_PIDM = $%$PIDM$%$
+AND SLRMASG_TERM_CODE = $%$TERM$%$
+AND SLRMASG_MSCD_CODE <> $%$ASSIGN_INACTIVE_CODE$%$
+AND SLRMASG_END_DATE = (
+    SELECT MAX(SLRMASG_END_DATE)
+    FROM SLRMASG
+    WHERE SLRMASG_PIDM = $%$PIDM$%$
+    AND SLRMASG_TERM_CODE = $%$TERM$%$
+    AND SLRMASG_MSCD_CODE <> $%$ASSIGN_INACTIVE_CODE$%$
 )
 """
 
@@ -328,9 +372,11 @@ for instance in instances:
     app_deactivate_count = 0
     app_correct_count = 0
     room_update_count = 0
+    room_insert_count = 0
     room_correct_count = 0
     meal_update_count = 0
     meal_correct_count = 0
+    meal_insert_count = 0
 
     sch_client.printme("Processing instance", ' ')
     for key in instance['key']:
@@ -342,7 +388,27 @@ for instance in instances:
     resident_number = 0
 
     instance_start_date = datetime.strptime(instance['start_date'], '%Y-%m-%d');
+    instance_end_date = datetime.strptime(instance['end_date'], '%Y-%m-%d');
     params = copy(instance['key'])
+
+    # set up datetime defaults for assignment insertion
+    params['start_date'] = max(datetime.now(), instance_start_date)
+    params['end_date'] = instance_end_date
+    params['assign_duration'] = (params['end_date'] - params['start_date']).days + 1
+
+    # if ASSIGN_CODE not included in instance key, load default
+    if 'ASSIGN_ACTIVE_CODE' not in params:
+        params['ASSIGN_ACTIVE_CODE'] = config['banner']['ASSIGN_ACTIVE_CODE']
+
+    if 'ASSIGN_INACTIVE_CODE' not in params:
+        params['ASSIGN_INACTIVE_CODE'] = config['banner']['ASSIGN_INACTIVE_CODE']
+
+    if 'ASSIGN_CHANGE_CODE' not in params:
+        params['ASSIGN_CHANGE_CODE'] = config['banner']['ASSIGN_CHANGE_CODE']
+
+    # default ASSIGN_CODE to 'active'
+    params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
+
     for resident in residents:
         resident_number += 1
 
@@ -362,21 +428,6 @@ for instance in instances:
             cursor.execute(query, query_params)
             app_record = cursor.fetchone()
 
-            # if ASSIGN_CODE not included in instance key, load default
-            if 'ASSIGN_ACTIVE_CODE' not in params:
-                params['ASSIGN_ACTIVE_CODE'] = config['banner']['ASSIGN_ACTIVE_CODE']
-
-            if 'ASSIGN_INACTIVE_CODE' not in params:
-                params['ASSIGN_INACTIVE_CODE'] = config['banner']['ASSIGN_INACTIVE_CODE']
-
-            if 'ASSIGN_CHANGE_CODE' not in params:
-                params['ASSIGN_CHANGE_CODE'] = config['banner']['ASSIGN_CHANGE_CODE']
-
-            # default ASSIGN_CODE to 'active'
-            params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
-
-            # print resident
-
             query, query_params = sch_client.prepare_query(room_assignment_select, params, ':0')
             cursor.execute(query, query_params)
             room_assignment_record = cursor.fetchone()
@@ -388,16 +439,18 @@ for instance in instances:
             # current assignments from banner
             banner_bldg_code = room_assignment_record[1] if room_assignment_record else None
             banner_room_number = room_assignment_record[2] if room_assignment_record else None
+            banner_rate_code = room_assignment_record[4] if room_assignment_record else None
             banner_meal_code = meal_assignment_record[2] if meal_assignment_record else None
 
             # current assignments from sch
             bldg_code = resident['residency']['BLDG_CODE'] if resident['residency'] else None
             room_number = resident['residency']['ROOM_NUMBER'] if resident['residency'] else None
+            rate_code = resident['residency']['RATE_CODE'] if resident['residency'] else None
             meal_code = resident['meal_plan']['MEAL_CODE'] if resident['meal_plan'] else None
 
             # determine if housing has changed
             housing_change = False
-            if banner_bldg_code != bldg_code or banner_room_number != room_number:
+            if banner_bldg_code != bldg_code or banner_room_number != room_number or banner_rate_code != rate_code:
                 housing_change = True
 
             # determine if meal plan has changed
@@ -432,7 +485,7 @@ for instance in instances:
                     cursor.execute(query, query_params)
                     app_insert_count += cursor.rowcount
 
-                # update application if room or meal planis assigned
+                # update application if room or meal plan is assigned
                 elif room_number or meal_code:
                     query, query_params = sch_client.prepare_query(application_change_update, params, ':0')
                     cursor.execute(query, query_params)
@@ -454,34 +507,97 @@ for instance in instances:
             else:
                 app_correct_count += 1
 
-            # deactivate and update assignment if needed
+            # deactivate and update housing assignment if needed
             if housing_change:
 
                 # update old assignment if prior to term start
                 if room_assignment_record and datetime.now() < instance_start_date:
-                    foo = False
+                    # update bldg/room/rate
+                    if resident['residency']:
+                        params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
+                        params['RATE_CODE'] = resident['residency']['RATE_CODE']
+                        query_statement = room_assignment_update
+                    # deactivate assignment
+                    else:
+                        params['ASSIGN_CODE'] = params['ASSIGN_INACTIVE_CODE']
+                        query_statement = room_assignment_status_update
+
+                    query, query_params = sch_client.prepare_query(query_statement, params, ':0')
+                    cursor.execute(query, query_params)
+                    room_update_count += cursor.rowcount
 
                 # change/withdraw old assignment before inserting new assignment
                 elif room_assignment_record:
-                    foo = False
+                    query, query_params = sch_client.prepare_query(room_assignment_change_update, params, ':0')
+                    cursor.execute(query, query_params)
+                    room_update_count += cursor.rowcount
 
                 # insert new assignment if none exists
                 # or term has already started (since old assignment has been deactivated)
                 if resident['residency'] and (
                     not room_assignment_record or datetime.now() >= instance_start_date
                 ):
-                    foo = False
+                    params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
+                    params['RATE_CODE'] = rate_code
+                    query, query_params = sch_client.prepare_query(room_assignment_insert, params, ':0')
+                    cursor.execute(query, query_params)
+                    room_insert_count += cursor.rowcount
 
 
-            if resident_number >= 15:
-                print app_insert_count, app_update_count, app_deactivate_count, app_correct_count
-                exit()
+            # deactivate and update meal assignment if needed
+            if meal_change:
+
+                # update old assignment if prior to term start
+                if meal_assignment_record and datetime.now() < instance_start_date:
+                    # update meal rate code
+                    if resident['meal_plan']:
+                        params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
+                        params['MEAL_CODE'] = meal_code
+                        query_statement = meal_assignment_update
+                    # deactivate assignment
+                    else:
+                        params['ASSIGN_CODE'] = params['ASSIGN_INACTIVE_CODE']
+                        query_statement = meal_assignment_status_update
+
+                    query, query_params = sch_client.prepare_query(query_statement, params, ':0')
+                    cursor.execute(query, query_params)
+                    room_update_count += cursor.rowcount
+
+                # change/withdraw old assignment before inserting new assignment
+                elif meal_assignment_record:
+                    query, query_params = sch_client.prepare_query(meal_assignment_change_update, params, ':0')
+                    cursor.execute(query, query_params)
+                    room_update_count += cursor.rowcount
+
+                # insert new assignment if none exists
+                # or term has already started (since old assignment has been deactivated)
+                if resident['meal_plan'] and (
+                    not meal_assignment_record or datetime.now() >= instance_start_date
+                ):
+                    params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
+                    params['MEAL_CODE'] = meal_code
+                    query, query_params = sch_client.prepare_query(meal_assignment_insert, params, ':0')
+                    cursor.execute(query, query_params)
+                    meal_insert_count += cursor.rowcount
 
     connection.commit()
-    # sch_client.printme("Residency updates: " + str(res_update_count + res_null_count), " ")
-    # sch_client.printme("(" + str(res_update_count) + " placed, " + str(res_null_count) + " unplaced, " + str(res_null_skipped_count) + " skipped)")
-    # sch_client.printme("Meal Plan updates: " + str(meal_update_count))
-    # sch_client.printme("Record(s) not found: " + str(len(residents) - res_update_count - res_null_count))
+    sch_client.printme("Application Record [SLBRMAP]: ("
+        + str(app_insert_count) + " insert(s) "
+        + str(app_update_count) + " update(s) "
+        + str(app_deactivate_count) + " deactivation(s) "
+        + str(app_correct_count) + " unchanged)"
+    )
+    sch_client.printme("Room Assignment Record [SLRRASG]: ("
+        + str(room_update_count) + " change(s) "
+        + str(room_insert_count) + " insert(s) "
+        + str(room_correct_count) + " unchanged)"
+    )
+    sch_client.printme("Meal Assignment Record [SLRMASG]: ("
+        + str(meal_update_count) + " change(s) "
+        + str(meal_insert_count) + " insert(s) "
+        + str(meal_correct_count) + " unchanged)"
+    )
+    sch_client.printme("Student record(s) not found: " + str(len(resident_missing)))
 
     if(len(resident_missing) > 0):
         sch_client.printme("Student records not found in SPRIDEN:")
