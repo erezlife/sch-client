@@ -466,12 +466,17 @@ for instance in instances:
             # update application if either housing or meal assignment changed
             if housing_change or meal_change:
 
-                if resident['residency'] and resident['meal_plan']:
-                    params['ARTP_CODE'] = 'HOME'
-                elif resident['residency']:
-                    params['ARTP_CODE'] = 'HOUS'
+                # use standard logic designating application type (meal only, housing only, etc) if offcampus app present
+                if 'OFFCAMPUS_SUBMISSION_TIME' in resident and resident['OFFCAMPUS_SUBMISSION_TIME']:
+                    if resident['residency'] and resident['meal_plan']:
+                        params['ARTP_CODE'] = 'HOME'
+                    elif resident['residency']:
+                        params['ARTP_CODE'] = 'HOUS'
+                    else:
+                        params['ARTP_CODE'] = 'MEAL'
+                # if off campus not submitted/approved, always use "HOME" code
                 else:
-                    params['ARTP_CODE'] = 'MEAL'
+                    params['ARTP_CODE'] = 'HOME'
 
                 # insert new application if there are changes and no application
                 if not app_record:
