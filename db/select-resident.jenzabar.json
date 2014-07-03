@@ -25,6 +25,7 @@
   {"model": "ResidentInstance", "field": "enrolledCredits"},
   {"model": "Resident", "field": "gpa"},
   {"model": "ResidentInstance", "field": "eligibleForHousing"},
+  {"model": "ResidentInstance", "field": "paidHousingDeposit"},
   {
     "model": "ResidentInstance",
     "field": "residentType",
