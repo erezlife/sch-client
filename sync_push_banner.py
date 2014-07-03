@@ -47,7 +47,7 @@ VALUES (
     $%$BLDG_CODE$%$,
     $%$ROOM_NUMBER$%$,
     $%$MEAL_CODE$%$,
-    $%$ASSIGN_CODE$%$,
+    $%$APP_CODE$%$,
     SYSDATE,
     SYSDATE,
     'Simple Campus',
@@ -102,7 +102,7 @@ AND EXISTS (
 application_status_update = """
 UPDATE SLBRMAP
 SET SLBRMAP_ACTIVITY_DATE = SYSDATE,
-    SLBRMAP_HAPS_CODE = $%$ASSIGN_CODE$%$,
+    SLBRMAP_HAPS_CODE = $%$APP_CODE$%$,
     SLBRMAP_HAPS_DATE = SYSDATE,
     SLBRMAP_DATA_ORIGIN = 'Simple Campus',
     SLBRMAP_USER_ID = 'SCH'
@@ -406,8 +406,19 @@ for instance in instances:
     if 'ASSIGN_CHANGE_CODE' not in params:
         params['ASSIGN_CHANGE_CODE'] = config['banner']['ASSIGN_CHANGE_CODE']
 
-    # default ASSIGN_CODE to 'active'
+    # if APP_CODE not included in instance key, load default
+    if 'APP_ACTIVE_CODE' not in params:
+        params['APP_ACTIVE_CODE'] = config['banner']['ASSIGN_ACTIVE_CODE']
+
+    if 'APP_INACTIVE_CODE' not in params:
+        params['APP_INACTIVE_CODE'] = config['banner']['APP_INACTIVE_CODE']
+
+    if 'APP_CHANGE_CODE' not in params:
+        params['APP_CHANGE_CODE'] = config['banner']['APP_CHANGE_CODE']
+
+    # default ASSIGN_CODE and APP_CODE to 'active'
     params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
+    params['APP_CODE'] = params['APP_ACTIVE_CODE']
 
     for resident in residents:
         resident_number += 1
@@ -420,7 +431,13 @@ for instance in instances:
         resident_row = cursor.fetchone()
         if not resident_row:
             resident_missing.add(params['id'])
+
+            if verbose:
+                sch_client.printme("Skipping Resident " + str(resident_number) + ": " + params['id'])
         else:
+            if verbose:
+                sch_client.printme("Processing Resident " + str(resident_number) + ": " + params['id'])
+
             pidm = resident_row[0]
             params['PIDM'] = pidm
 
@@ -501,9 +518,9 @@ for instance in instances:
 
                     # use inactive code if prior to instance start
                     if datetime.now() < instance_start_date:
-                        params['ASSIGN_CODE'] = params['ASSIGN_INACTIVE_CODE']
+                        params['APP_CODE'] = params['APP_INACTIVE_CODE']
                     else:
-                        params['ASSIGN_CODE'] = params['ASSIGN_CHANGE_CODE']
+                        params['APP_CODE'] = params['APP_CHANGE_CODE']
 
                     query, query_params = sch_client.prepare_query(application_status_update, params, ':0')
                     cursor.execute(query, query_params)
