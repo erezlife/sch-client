@@ -13,7 +13,7 @@ SELECT
     COALESCE(stsd.hrs_enrolled, 0) as EnrolledCredits,
     COALESCE(stsd.career_gpa, 0) as GPA,
     CASE WHEN c.stage IS NOT NULL AND c.stage <> 'DEP' THEN 'false' ELSE 'true' END as eligible,
-    CASE WHEN c.stage = 'DEP' THEN 'true' ELSE 'false' END as paiddeposit,
+    CASE WHEN c.stage IN ('DEP', 'ENR') THEN 'true' ELSE 'false' END as paiddeposit,
     CASE WHEN c.id_num IS NOT NULL THEN 'New' ELSE 'Returning' END as residenttype,
     CASE WHEN ext.udef_1a_1 = 'A' THEN 'true' ELSE 'false' END as ApprovedException
 FROM name_master nm
