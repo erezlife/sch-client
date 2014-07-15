@@ -20,6 +20,14 @@ resident_select = """
 SELECT * FROM SPRIDEN WHERE SPRIDEN_ID = $%$id$%$
 """
 
+room_assignment_dates_select = """
+SELECT * FROM SLRASCD WHERE SLRASCD_TERM_CODE = $%$TERM$%$ AND SLRASCD_ASCD_CODE = $%$ASSIGN_CODE$%$
+"""
+
+meal_assignment_dates_select = """
+SELECT * FROM SLRMSCD WHERE SLRMSCD_TERM_CODE = $%$TERM$%$ AND SLRMSCD_MSCD_CODE = $%$ASSIGN_CODE$%$
+"""
+
 application_insert = """
 INSERT INTO SLBRMAP (
     SLBRMAP_PIDM,
@@ -265,7 +273,6 @@ INSERT INTO SLRMASG (
     SLRMASG_PIDM,
     SLRMASG_MRCD_CODE,
     SLRMASG_TERM_CODE,
-    SLRMASG_RRCD_CODE, -- rate code
     SLRMASG_BEGIN_DATE,
     SLRMASG_END_DATE,
     SLRMASG_TOTAL_DAYS,
@@ -284,7 +291,6 @@ VALUES (
     $%$PIDM$%$,
     $%$MEAL_CODE$%$,
     $%$TERM$%$,
-    $%$RATE_CODE$%$,
     $%$start_date$%$,
     $%$end_date$%$,
     $%$assign_duration$%$,
@@ -389,12 +395,11 @@ for instance in instances:
 
     instance_start_date = datetime.strptime(instance['start_date'], '%Y-%m-%d');
     instance_end_date = datetime.strptime(instance['end_date'], '%Y-%m-%d');
-    params = copy(instance['key'])
+    sch_client.printme('Instance Dates: ', ' ')
+    sch_client.printme(instance_start_date.strftime('%Y-%m-%d'),' - ')
+    sch_client.printme(instance_end_date.strftime('%Y-%m-%d'))
 
-    # set up datetime defaults for assignment insertion
-    params['start_date'] = max(datetime.now(), instance_start_date)
-    params['end_date'] = instance_end_date
-    params['assign_duration'] = (params['end_date'] - params['start_date']).days + 1
+    params = copy(instance['key'])
 
     # if ASSIGN_CODE not included in instance key, load default
     if 'ASSIGN_ACTIVE_CODE' not in params:
@@ -419,6 +424,25 @@ for instance in instances:
     # default ASSIGN_CODE and APP_CODE to 'active'
     params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
     params['APP_CODE'] = params['APP_ACTIVE_CODE']
+
+    # get room assignment and meal assignment start/end dates
+    query, query_params = sch_client.prepare_query(room_assignment_dates_select, params, ':0')
+    cursor.execute(query, query_params)
+    dates_row = cursor.fetchone()
+    room_start_date = dates_row[2]
+    room_end_date = dates_row[3]
+    sch_client.printme('Room Assignment Dates: ', ' ')
+    sch_client.printme(room_start_date.strftime('%Y-%m-%d'),' - ')
+    sch_client.printme(room_end_date.strftime('%Y-%m-%d'))
+
+    query, query_params = sch_client.prepare_query(meal_assignment_dates_select, params, ':0')
+    cursor.execute(query, query_params)
+    dates_row = cursor.fetchone()
+    meal_start_date = dates_row[2]
+    meal_end_date = dates_row[3]
+    sch_client.printme('Meal Assignment Dates: ', ' ')
+    sch_client.printme(meal_start_date.strftime('%Y-%m-%d'),' - ')
+    sch_client.printme(meal_end_date.strftime('%Y-%m-%d'))
 
     for resident in residents:
         resident_number += 1
@@ -483,6 +507,12 @@ for instance in instances:
             # update application if either housing or meal assignment changed
             if housing_change or meal_change:
 
+                # set up datetime values for assignment insertion
+                # application (SLRRMAP) start/end dates are based on SCH instance
+                params['start_date'] = max(datetime.now(), instance_start_date)
+                params['end_date'] = instance_end_date
+                params['assign_duration'] = (params['end_date'] - params['start_date']).days + 1
+
                 # use standard logic designating application type (meal only, housing only, etc) if offcampus app present
                 if 'OFFCAMPUS_SUBMISSION_TIME' in resident and resident['OFFCAMPUS_SUBMISSION_TIME']:
                     if resident['residency'] and resident['meal_plan']:
@@ -532,8 +562,14 @@ for instance in instances:
             # deactivate and update housing assignment if needed
             if housing_change:
 
+                # set up datetime values for assignment insertion
+                # housing assignment (SLRRASG) start/end dates are based on SLRASCD
+                params['start_date'] = max(datetime.now(), room_start_date)
+                params['end_date'] = room_end_date
+                params['assign_duration'] = (params['end_date'] - params['start_date']).days + 1
+
                 # update old assignment if prior to term start
-                if room_assignment_record and datetime.now() < instance_start_date:
+                if room_assignment_record and datetime.now() < room_start_date:
                     # update bldg/room/rate
                     if resident['residency']:
                         params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
@@ -557,7 +593,7 @@ for instance in instances:
                 # insert new assignment if none exists
                 # or term has already started (since old assignment has been deactivated)
                 if resident['residency'] and (
-                    not room_assignment_record or datetime.now() >= instance_start_date
+                    not room_assignment_record or datetime.now() >= room_start_date
                 ):
                     params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
                     params['RATE_CODE'] = rate_code
@@ -569,8 +605,14 @@ for instance in instances:
             # deactivate and update meal assignment if needed
             if meal_change:
 
+                # set up datetime values for assignment insertion
+                # meal assignment (SLRMASG) start/end dates are based on SLRMSCD
+                params['start_date'] = max(datetime.now(), meal_start_date)
+                params['end_date'] = meal_end_date
+                params['assign_duration'] = (params['end_date'] - params['start_date']).days + 1
+
                 # update old assignment if prior to term start
-                if meal_assignment_record and datetime.now() < instance_start_date:
+                if meal_assignment_record and datetime.now() < meal_start_date:
                     # update meal rate code
                     if resident['meal_plan']:
                         params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
@@ -594,7 +636,7 @@ for instance in instances:
                 # insert new assignment if none exists
                 # or term has already started (since old assignment has been deactivated)
                 if resident['meal_plan'] and (
-                    not meal_assignment_record or datetime.now() >= instance_start_date
+                    not meal_assignment_record or datetime.now() >= meal_start_date
                 ):
                     params['ASSIGN_CODE'] = params['ASSIGN_ACTIVE_CODE']
                     params['MEAL_CODE'] = meal_code
