@@ -16,8 +16,9 @@ connection = cx_Oracle.connect(config['db_connection'])
 cursor = connection.cursor()
 verbose = False
 
+# Proxy for SPRIDEN table in Banner. View containing relevant students
 resident_select = """
-SELECT * FROM SPRIDEN WHERE SPRIDEN_ID = $%$id$%$
+SELECT * FROM acadmgr.sch_student_demo WHERE acadmgr.sch_student_demo.STUDENTID = $%$id$%$
 """
 
 room_assignment_dates_select = """
