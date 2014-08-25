@@ -488,8 +488,8 @@ for instance in instances:
                 banner_meal_code = meal_assignment_record[2] if meal_assignment_record else None
 
                 # current assignments from sch
-                bldg_code = resident['residency']['BLDG_CODE'] if resident['residency'] else None
-                room_number = resident['residency']['ROOM_NUMBER'] if resident['residency'] else None
+                bldg_code = resident['residency']['BLDG_CODE'] if resident['residency'] and 'BLDG_CODE' in resident['residency'] else None
+                room_number = resident['residency']['ROOM_NUMBER'] if resident['residency'] and 'ROOM_NUMBER' in resident['residency'] else None
                 rate_code = resident['residency']['RATE_CODE'] if resident['residency'] else None
                 meal_code = resident['meal_plan']['MEAL_CODE'] if resident['meal_plan'] else None
 
