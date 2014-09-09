@@ -6,17 +6,6 @@ import pyodbc
 import os
 
 
-def execute_pull(api, conn, query, params, columns, batch_size=10):
-    cursor = conn.cursor()
-    query, query_params = sch_client.prepare_query(query, params)
-    cursor.execute(query, *query_params)
-
-    def iterate():
-        return cursor.fetchone()
-
-    return sch_client.set_residents_batch(api, iterate, columns, params, batch_size)
-
-
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 sch_client.init_logging(__location__, 'sync_pull')
 sch_client.printme('------ Begin sync_pull ------')
@@ -33,6 +22,18 @@ if dbms == 'oracle':
     connection = cx_Oracle.connect(config['db_connection'])
 else:
     connection = pyodbc.connect(config['db_connection'])
+
+
+def execute_pull(api, conn, query, params, columns, batch_size=10):
+    cursor = conn.cursor()
+    query, query_params = sch_client.prepare_query(query, params, (':0' if dbms == 'oracle' else '?'))
+    cursor.execute(query, *query_params)
+
+    def iterate():
+        return cursor.fetchone()
+
+    return sch_client.set_residents_batch(api, iterate, columns, params, batch_size)
+
 
 instances = api.get_instances()
 for instance in instances:
