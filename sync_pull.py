@@ -27,7 +27,12 @@ api = sch_client.API(config['uri'], config['key'], config['secret'])
 if 'input_encoding' in config:
     api.input_encoding = config['input_encoding']
 
-connection = pyodbc.connect(config['db_connection'])
+dbms = config['dbms'] if 'dbms' in config else 'odbc'
+if dbms == 'oracle':
+    import cx_Oracle
+    connection = cx_Oracle.connect(config['db_connection'])
+else:
+    connection = pyodbc.connect(config['db_connection'])
 
 instances = api.get_instances()
 for instance in instances:
