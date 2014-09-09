@@ -26,8 +26,13 @@ else:
 
 def execute_pull(api, conn, query, params, columns, batch_size=10):
     cursor = conn.cursor()
-    query, query_params = sch_client.prepare_query(query, params, (':0' if dbms == 'oracle' else '?'))
-    cursor.execute(query, *query_params)
+
+    if dbms == 'oracle':
+        query, query_params = sch_client.prepare_query(query, params, ':0')
+        cursor.execute(query, query_params)
+    else:
+        query, query_params = sch_client.prepare_query(query, params)
+        cursor.execute(query, *query_params)
 
     def iterate():
         return cursor.fetchone()
