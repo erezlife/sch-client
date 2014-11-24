@@ -5,18 +5,24 @@ import json
 import os
 import csv
 import sys
+import argparse
 
+parser = argparse.ArgumentParser(description='Get config file and import file name from command line')
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 sch_client.init_logging(__location__, 'csv_import')
 
 # load config file from first argument if passed
-if len(sys.argv) > 1:
-    configFile = sys.argv[1]
-else:
-    configFile = os.path.join(__location__, 'config.json')
+
+parser.add_argument('-f', dest='csvname', nargs='?', default = None)
+parser.add_argument('configFile', nargs='?', default=os.path.join(__location__, 'config.json'))
+
+args = parser.parse_args()
+configFile = args.configFile
 
 config = json.load(open(configFile))
+csvtemp = config['import_csv'] if 'import_csv' in config else 'import.csv'
+csvname = args.csvname if args.csvname is not None else csvtemp
 
 # initialize sch api library
 identifier = config['identifier'] if 'identifier' in config else None
@@ -28,8 +34,6 @@ if 'input_encoding' in config:
 api.printme('------ Begin csv_import ------')
 
 columns = json.load(open(os.path.join(__location__, config['import_map'])))
-
-csvname = config['import_csv'] if 'import_csv' in config else 'import.csv'
 has_header = config['import_csv_header'] if 'import_csv_header' in config else False
 calculated_columns = config['calculated_import_columns'] if 'calculated_import_columns' in config else []
 deactivate_missing = config['deactivate_missing_residents'] if 'deactivate_missing_residents' in config else False
