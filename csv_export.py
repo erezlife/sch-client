@@ -145,7 +145,11 @@ with open(csvname, 'w') as csvfile:
             for column_name in export_column_order:
                 row.append(format_output(resident_dict[column_name]))
 
-            writer.writerow(row)
+            try:
+                writer.writerow(row)
+            except Exception as e:
+                api.printme('error printing record: ' + resident['id'])
+                api.printme(traceback.format_exception(*sys.exc_info()))
 
         instance_num += 1
 
