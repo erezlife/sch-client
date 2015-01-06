@@ -101,7 +101,7 @@ with open(csvname, 'w') as csvfile:
                 if sch_client.is_iterable(resident[key]):
                     for column in resident[key]:
                         columns[key].add(column)
-                elif resident[key]:
+                else:
                     columns['resident'].add(key)
 
     # define default column ordering by sorting column sets (starting with first set defined)
