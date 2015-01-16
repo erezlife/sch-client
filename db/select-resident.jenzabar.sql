@@ -15,7 +15,8 @@ SELECT
     CASE WHEN c.stage IS NOT NULL AND c.stage NOT IN ('DEP', 'ENR') THEN 'false' ELSE 'true' END as eligible,
     CASE WHEN c.stage IN ('DEP', 'ENR', 'WDDEP') THEN 'true' ELSE 'false' END as paiddeposit,
     CASE WHEN c.id_num IS NOT NULL THEN 'New' ELSE 'Returning' END as residenttype,
-    CASE WHEN ext.udef_1a_1 = 'A' THEN 'true' ELSE 'false' END as ApprovedException
+    CASE WHEN ext.udef_1a_1 = 'A' THEN 'true' ELSE 'false' END as ApprovedException,
+    am.addr_line_1 as schoolemail
 FROM name_master nm
 INNER JOIN biograph_master bm
     ON bm.id_num = nm.id_num
@@ -33,6 +34,9 @@ LEFT JOIN candidacy c
 LEFT JOIN stud_sess_asgn_ext ext
     ON ext.id_num = stsd.id_num
     AND ext.sess_cde = $%$SESS_CDE$%$
+LEFT JOIN address_master am
+    ON am.id_num = nm.id_num
+    AND am.addr_cde = '*EML'
 WHERE (c.id_num IS NOT NULL OR stsd.id_num IS NOT NULL)
 AND bm.birth_dte IS NOT NULL
 AND bm.gender IS NOT NULL

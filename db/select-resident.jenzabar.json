@@ -35,5 +35,13 @@
     "model": "ResidentInstance",
     "field": "dataValue",
     "arguments": ["housing-exception"]
+  },
+  {
+    "ssoIdentifier": true,
+    "regexCondition": "@mail\\.ic\\.edu$",
+    "regexTransform": {
+      "pattern": "@mail\\.ic\\.edu$",
+      "replacement": "@ic.edu"
+    }
   }
 ]

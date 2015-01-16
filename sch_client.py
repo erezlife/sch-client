@@ -7,6 +7,7 @@ import logging
 import traceback
 import uuid
 import string
+import re
 from copy import copy
 
 if sys.version_info < (3, 0):
@@ -85,14 +86,18 @@ def prepare_query(query, params, placeholder = '?'):
 
 def set_residents_batch(api, iterate, columns, params, batch_size=10):
     updated = 0
+    principals_updated = 0
     skipped = 0
     total = 0
     batch_count = 0
     missing_records = {}
-    col_filter = lambda x: not ('ignore' in x and x['ignore'])
+    col_filter = lambda x: not ('ignore' in x and x['ignore']) and ('model' in x or 'name' in x)
     filtered_columns = list(filter(col_filter, columns))
+    sso_config, sso_col_index = api.get_sso_config(columns)
+    id_col_index = api.get_id_column(columns)
     while True:
         data = []
+        sso_data = []
         current_row = 1
         while len(data) < batch_size:
             row = iterate()
@@ -100,12 +105,20 @@ def set_residents_batch(api, iterate, columns, params, batch_size=10):
             if len(row) != len(columns):
                 raise Exception('Number of fields in CSV on record ' + str(total + current_row) + ' does not match manifest')
             record = []
+            externalid = None
+            sso_principal = None
             for i, val in enumerate(row):
                 if col_filter(columns[i]):
                     if val is not None:
                         val = str(val).rstrip()
                     record.append(val)
+                if i == sso_col_index:
+                    sso_principal = api.transform_sso_principal(columns[i], val)
+                if sso_config and i == id_col_index:
+                    externalid = val
             data.append(record)
+            if sso_principal and externalid:
+                sso_data.append({ 'externalid': externalid, 'principal': sso_principal })
             current_row += 1
 
         batch_count += 1
@@ -116,9 +129,14 @@ def set_residents_batch(api, iterate, columns, params, batch_size=10):
         skipped += result['skipped']
         total = updated + skipped
         missing_records.update(result['missing_records'])
+
+        if len(sso_data):
+            result = api.set_resident_principals(sso_data, params)
+            principals_updated += result if result else 0
+
         if len(data) < batch_size: break
 
-    return updated, skipped, missing_records
+    return updated, skipped, missing_records, principals_updated
 
 # given a resident dictionary and a rule, determines if that resident satisfies the rule
 def match_rule(rule, resident):
@@ -285,6 +303,67 @@ class API:
             exit(1)
 
         return json_response
+
+    def set_resident_principals(self, data, options):
+        options = copy(options)
+        options['entities'] = data
+        req_data = self.json_dumps(options)
+        uri = self.uri + '/resident/external_principal?token=' + self.token
+
+        req = create_request(uri, req_data)
+        req.add_header('Content-Type', 'application/json')
+        req.get_method = lambda: 'POST'
+
+        try:
+            self.response = urlopen(req)
+        except Exception as e:
+            self.printme(e)
+            self.printme(e.read().decode('utf8'))
+            exit(1)
+
+        response = self.response.read().decode('utf8')
+        try:
+            json_response = json.loads(response)
+        except Exception:
+            self.printme("Unable to parse JSON output from API.")
+            self.printme("Response:")
+            self.printme(response)
+            exit(1)
+
+        if json_response['success']:
+            return len(json_response['entities'])
+        return None
+
+    # Returns config object and column index for the external account principal if it exists in mapping
+    def get_sso_config(self, columns):
+        for idx, column in enumerate(columns):
+            if 'ssoIdentifier' in column and column['ssoIdentifier']:
+                return column, idx
+        return False
+
+    def transform_sso_principal(self, config, data):
+        principal = data
+        if 'regexCondition' in config:
+            match = re.search(config['regexCondition'], data)
+            principal = data if match else None
+
+        if principal:
+            if 'regexTransform' in config:
+                pattern = config['regexTransform']['pattern']
+                replacement = config['regexTransform']['replacement']
+                principal = re.sub(pattern, replacement, principal)
+            return principal
+        return None
+
+    # returns the index of the externalid column
+    def get_id_column(self, columns):
+        for idx, column in enumerate(columns):
+            if 'name' in column and column['name'] == 'id':
+                return idx
+            if 'field' in column and 'model' in column and \
+                column['field'] == 'externalid' and column['model'] == 'Resident':
+                return idx
+        return None
 
     def set_residents_inactive(self, residents, options):
         options = copy(options)
