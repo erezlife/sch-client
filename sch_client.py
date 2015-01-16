@@ -361,7 +361,7 @@ class API:
             if 'name' in column and column['name'] == 'id':
                 return idx
             if 'field' in column and 'model' in column and \
-                column['field'] == 'externalid' and column['model'] == 'Resident':
+                column['field'] == 'externalId' and column['model'] == 'Resident':
                 return idx
         return None
 
