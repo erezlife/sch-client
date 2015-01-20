@@ -339,7 +339,7 @@ class API:
         for idx, column in enumerate(columns):
             if 'ssoIdentifier' in column and column['ssoIdentifier']:
                 return column, idx
-        return False
+        return False, -1
 
     def transform_sso_principal(self, config, data):
         principal = data
