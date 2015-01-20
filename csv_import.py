@@ -120,7 +120,7 @@ with open(csvname, 'r') as csvfile:
                     resident_ids[instance_id] = [resident_id]
         return resident
 
-    num_updated, num_skipped, missing_records = sch_client.set_residents_batch(api, iterate, columns, {}, 10)
+    num_updated, num_skipped, missing_records, principals_updated = sch_client.set_residents_batch(api, iterate, columns, {}, 10)
 
     num_deactivated = 0
     if deactivate_missing:
@@ -139,6 +139,7 @@ with open(csvname, 'r') as csvfile:
     api.printme("Records updated: " + str(num_updated))
     api.printme("Records skipped: " + str(num_skipped))
     api.printme("Records deactivated: " + str(num_deactivated))
+    sch_client.printme("SSO principals updated: " + str(principals_updated))
     if len(missing_records) > 0:
         api.printme("Missing records:")
         for model, conditions in missing_records.items():
