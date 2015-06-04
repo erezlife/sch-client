@@ -88,7 +88,7 @@ with open(csvname, 'r') as csvfile:
             if 'assnExtLookupField' in column and 'field' in column and column['field'] == 'instance':
                 for instance in instances:
                     value_match = field_match = False
-                    for key, value in instance.items():
+                    for key, value in instance['key'].items():
                         if key == column['assnExtLookupField']:
                             field_match = True
                             # skip to next instance if field does not match
@@ -129,11 +129,11 @@ with open(csvname, 'r') as csvfile:
             if instance_id in resident_ids and len(resident_ids[instance_id]) > 0:
                 del instance['id']
                 api.printme("deactivating records for", ' ')
-                for key in instance:
-                    api.printme(key + "='" + instance[key], "' ")
+                for key in instance['key']:
+                    api.printme(key + "='" + instance['key'][key], "' ")
                 api.printme()
 
-                result = api.set_residents_inactive(resident_ids[instance_id], instance)
+                result = api.set_residents_inactive(resident_ids[instance_id], instance['key'])
                 num_deactivated += result['updated']
 
     api.printme("Records updated: " + str(num_updated))

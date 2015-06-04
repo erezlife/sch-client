@@ -44,8 +44,8 @@ instances = api.get_instances()
 for instance in instances:
     sch_client.printme("Processing instance", ' ')
     for key in instance['key']:
-        sch_client.printme(key + "=" + instance['key'][key], ' ')
-    sch_client.printme()
+        api.printme(key + "=" + instance['key'][key], ' ')
+    api.printme()
     num_updated, num_skipped, missing_records, principals_updated = execute_pull(api, connection, sql, instance['key'], columns)
     sch_client.printme("Records updated: " + str(num_updated))
     sch_client.printme("Records skipped: " + str(num_skipped))
