@@ -6,5 +6,6 @@
 	"pull_sql": "db/select-resident.jenzabar.sql",
 	"pull_map": "db/select-resident.jenzabar.json",
 	"push_mealplan": true,
+	"skip_stud_sess_assign_insert": false,
 	"housing_app_requirements_cde": "RSAPP"
 }

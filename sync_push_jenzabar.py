@@ -464,7 +464,7 @@ for instance in instances:
             params['RESID_COMMUTER_STS'] = None
             params['ROOM_TYPE'] = None
             # insert stud_sess_assign record if not found
-            if not stud_row:
+            if not stud_row and not ('skip_stud_sess_assign_insert' in config and config['skip_stud_sess_assign_insert']):
                 if resident_exists(params['id']):
                     query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
                     cursor.execute(query, *query_params)
