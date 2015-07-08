@@ -449,6 +449,7 @@ for instance in instances:
 
         # update ROOM_ASSIGN and STUD_SESS_ASSIGN data for all residents in SCH
         residents = api.get_residents(instance['key'])
+        skip_student_map = {}
         sch_client.printme("Total Residents: " + str(len(residents)))
         for resident in residents:
             params = copy(instance['key'])
@@ -463,8 +464,13 @@ for instance in instances:
             params['ROOM_ASSIGN_STS'] = 'U'
             params['RESID_COMMUTER_STS'] = None
             params['ROOM_TYPE'] = None
+            skip_student_map[params['id']] = False
+
+            if 'skip_stud_sess_assign_insert' in config and config['skip_stud_sess_assign_insert']:
+                skip_student_map[params['id']] = True
+
             # insert stud_sess_assign record if not found
-            if not stud_row and not ('skip_stud_sess_assign_insert' in config and config['skip_stud_sess_assign_insert']):
+            if not stud_row and not skip_student_map[params['id']]:
                 if resident_exists(params['id']):
                     query, query_params = sch_client.prepare_query(stud_sess_assign_insert, params)
                     cursor.execute(query, *query_params)
@@ -476,7 +482,7 @@ for instance in instances:
 
 
             # update resident room assignment
-            if resident['residency'] and 'BLDG_LOC_CDE' in resident['residency']:
+            if resident['residency'] and 'BLDG_LOC_CDE' in resident['residency'] and not skip_student_map[params['id']]:
                 residency = resident['residency']
                 bldg_loc_cde = residency['BLDG_LOC_CDE'] if 'BLDG_LOC_CDE' in residency else None
                 bldg_cde = residency['BLDG_CDE'] if 'BLDG_CDE' in residency else None
@@ -504,7 +510,7 @@ for instance in instances:
                     room_assign_count_insert += 1
 
             # update resident status in STUD_SESS_ASSIGN
-            if resident['residency']:
+            if resident['residency'] and not skip_student_map[params['id']]:
                 if verbose:
                     sch_client.printme("Updating STUD_SESS_ASSIGN for " + params['id'])
                 params.update(resident['residency'])
@@ -569,7 +575,7 @@ for instance in instances:
                 for room_cde in room_occupants[bldg_loc_cde][bldg_cde]:
                     for res_id in room_occupants[bldg_loc_cde][bldg_cde][room_cde]:
                         for roommate_id in room_occupants[bldg_loc_cde][bldg_cde][room_cde]:
-                            if res_id != roommate_id:
+                            if res_id != roommate_id and not skip_student_map[res_id]:
                                 params['id'] = res_id
                                 params['roommate_id'] = roommate_id
                                 params['BLDG_LOC_CDE'] = bldg_loc_cde
