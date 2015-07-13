@@ -466,7 +466,7 @@ for instance in instances:
             params['ROOM_TYPE'] = None
             skip_student_map[params['id']] = False
 
-            if 'skip_stud_sess_assign_insert' in config and config['skip_stud_sess_assign_insert']:
+            if 'skip_stud_sess_assign_insert' in config and config['skip_stud_sess_assign_insert'] and not stud_row:
                 skip_student_map[params['id']] = True
 
             # insert stud_sess_assign record if not found
