@@ -14,7 +14,7 @@
     "field": "instance",
     "assnExtLookupField": "SESS_CDE"
   },
-  {"name": "id"},
+  {"name": "id", "ssoIdentifier": true},
   {"model": "Resident", "field": "firstName"},
   {"model": "Resident", "field": "lastName"},
   {"model": "Resident", "field": "gender"},
@@ -37,11 +37,6 @@
     "arguments": ["housing-exception"]
   },
   {
-    "ssoIdentifier": true,
-    "regexCondition": "@mail\\.ic\\.edu$",
-    "regexTransform": {
-      "pattern": "@mail\\.ic\\.edu$",
-      "replacement": "@ic.edu"
-    }
+    "ignore": true
   }
 ]
