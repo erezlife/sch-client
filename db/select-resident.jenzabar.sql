@@ -31,6 +31,7 @@ LEFT JOIN candidacy c
     AND c.yr_cde = $%$YR_CDE$%$
     AND c.trm_cde = $%$TRM_CDE$%$
     AND c.stage IN ('DEP', 'WDDEP', 'ENR', 'ADMIT', 'HOLD')
+    AND c.CUR_CANDIDACY = 'Y'
 LEFT JOIN stud_sess_asgn_ext ext
     ON ext.id_num = stsd.id_num
     AND ext.sess_cde = $%$SESS_CDE$%$
