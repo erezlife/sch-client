@@ -44,6 +44,7 @@ resident_ids = {}   # dictionary of resident id lists for each instance
 with open(csvname, 'r') as csvfile:
 
     reader = csv.reader(csvfile, dialect='excel')
+    encoding = api.input_encoding if hasattr(api, 'input_encoding') else 'utf8'
 
     # store named columns
     if has_header:
@@ -109,7 +110,6 @@ with open(csvname, 'r') as csvfile:
         except StopIteration:
             return None
 
-        encoding = api.input_encoding if hasattr(api, 'input_encoding') else 'utf8'
         resident_dict = sch_client.FunctionDict(resident, get_field_value)
         resident += sch_client.get_calculated_columns(calculated_columns, resident_dict, encoding)
         if deactivate_missing:
