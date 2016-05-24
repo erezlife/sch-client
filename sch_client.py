@@ -190,7 +190,7 @@ def format_calculated_output(output, map, encoding):
         return output
 
 # gets the value for the calculated column (dict) passed given the resident
-def get_calculated_column(column, resident, encoding):
+def get_calculated_column(column, resident, encoding='utf8'):
     output = format_calculated_output(column['default'], resident, encoding)
     if 'conditions' in column:
         for condition in column['conditions']:
