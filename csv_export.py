@@ -41,8 +41,8 @@ def format_output(output):
             return output
         return output.strftime(config['datetime_format'])
     if sch_client.is_string(output):
-        if hasattr(config, 'input_encoding'):
-            return output.encode(encoding=config.input_encoding)
+        if 'input_encoding' in config:
+            return output.encode(encoding=config['input_encoding'])
         else:
             return output.encode(encoding='utf8')
     return output
