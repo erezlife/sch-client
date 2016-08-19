@@ -40,11 +40,6 @@ def format_output(output):
         except ValueError:
             return output
         return output.strftime(config['datetime_format'])
-    if sch_client.is_string(output):
-        if 'input_encoding' in config:
-            return output.encode(encoding=config['input_encoding'])
-        else:
-            return output.encode(encoding='utf8')
     return output
 
 # function passed to get_calculated_columns to get a named value for the given resident
