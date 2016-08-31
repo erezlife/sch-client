@@ -182,7 +182,9 @@ def is_iterable(value):
 
 def format_calculated_output(output, map, encoding):
     if is_string(output):
-        output = string.Template(output.decode(encoding).encode('utf8')).safe_substitute(map)
+        if sys.version_info < (3, 0):
+            output = output.decode(encoding).encode('utf8')
+        output = string.Template(output).safe_substitute(map)
         if output == 'None':
             return None
         return output
