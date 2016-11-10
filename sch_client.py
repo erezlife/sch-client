@@ -180,8 +180,10 @@ def is_iterable(value):
             return False
     return False
 
-def format_calculated_output(output, map):
+def format_calculated_output(output, map, encoding):
     if is_string(output):
+        if sys.version_info < (3, 0):
+            output = output.decode(encoding).encode('utf8')
         output = string.Template(output).safe_substitute(map)
         if output == 'None':
             return None
@@ -190,8 +192,8 @@ def format_calculated_output(output, map):
         return output
 
 # gets the value for the calculated column (dict) passed given the resident
-def get_calculated_column(column, resident):
-    output = format_calculated_output(column['default'], resident)
+def get_calculated_column(column, resident, encoding='utf8'):
+    output = format_calculated_output(column['default'], resident, encoding)
     if 'conditions' in column:
         for condition in column['conditions']:
             if isinstance(condition['rules'], dict):
@@ -202,15 +204,15 @@ def get_calculated_column(column, resident):
                     valid = valid and match_rule(rule, resident)
                     if not valid: break
             if valid:
-                output = format_calculated_output(condition['output'], resident)
+                output = format_calculated_output(condition['output'], resident, encoding)
                 break
     return output
 
 # get a list of all calculated column values for the given resident dictionary
-def get_calculated_columns(calculated_columns, resident):
+def get_calculated_columns(calculated_columns, resident, encoding='utf8'):
     outputs = []
     for i, column in enumerate(calculated_columns):
-        outputs.append(get_calculated_column(column, resident))
+        outputs.append(get_calculated_column(column, resident, encoding))
     return outputs
 
 # Custom dictionary for getting values for the particular resident in the iteration.
