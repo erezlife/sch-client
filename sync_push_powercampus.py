@@ -38,6 +38,20 @@ AND ACADEMIC_YEAR = $%$ACADEMIC_YEAR$%$
 AND ACADEMIC_TERM = $%$ACADEMIC_TERM$%$
 AND ACADEMIC_SESSION = $%$ACADEMIC_SESSION$%$"""
 
+residency_update_no_status = """
+UPDATE Residency
+SET DORM_CAMPUS = $%$DORM_CAMPUS$%$,
+ DORM_PLAN = $%$DORM_PLAN$%$,
+ DORM_BUILDING = $%$DORM_BUILDING$%$,
+ DORM_ROOM = $%$DORM_ROOM$%$,
+ REVISION_OPID = 'SCH',
+ REVISION_DATE = DATEADD(dd, 0, DATEDIFF(dd, 0, GETDATE())),
+ REVISION_TIME = DATEADD(ss, DATEDIFF(ss, DATEADD(dd, 0, DATEDIFF(dd, 0, GETDATE())), GETDATE()), 0)
+WHERE PEOPLE_CODE_ID = $%$id$%$
+AND ACADEMIC_YEAR = $%$ACADEMIC_YEAR$%$
+AND ACADEMIC_TERM = $%$ACADEMIC_TERM$%$
+AND ACADEMIC_SESSION = $%$ACADEMIC_SESSION$%$"""
+
 mealplan_update = """
 UPDATE Residency
 SET FOOD_PLAN = $%$FOOD_PLAN$%$,
@@ -90,8 +104,11 @@ for instance in instances:
                 sch_client.printme("Updating Residency for " + params['id'], ": ")
                 sch_client.printme(json.dumps(resident['residency']))
             params.update(resident['residency'])
-            params['RESIDENT_COMMUTER'] = 'R'
-            query, query_params = sch_client.prepare_query(residency_update, params)
+            if 'DORM_ROOM' in resident['residency'] and resident['residency']['DORM_ROOM']:
+                params['RESIDENT_COMMUTER'] = 'R'
+                query, query_params = sch_client.prepare_query(residency_update, params)
+            else:
+                query, query_params = sch_client.prepare_query(residency_update_no_status, params)
             res_update_count += cursor.execute(query, *query_params).rowcount
         else:
             query, query_params = sch_client.prepare_query(residency_select, params)
