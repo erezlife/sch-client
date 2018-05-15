@@ -147,7 +147,7 @@ with open(csvname, 'w') as csvfile:
                 row.append(format_output(resident_dict[column_name]))
 
             try:
-                writer.writerow(row)
+                writer.writerow([(unicode(s).encode("utf-8") if s else '') for s in row])
             except Exception as e:
                 api.printme('error printing record: ' + resident['id'])
                 api.printme(traceback.format_exception(*sys.exc_info()))
