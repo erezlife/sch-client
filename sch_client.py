@@ -271,10 +271,7 @@ class API:
         return json.loads(self.response.read().decode('utf8'))
 
     def json_dumps(self, options):
-        if hasattr(self, 'input_encoding'):
-            return json.dumps(options, encoding=self.input_encoding).decode(self.input_encoding).encode('utf8', ensure_ascii=False)
-        else:
-            return json.dumps(options).encode('utf8', ensure_ascii=False)
+        return json.dumps(options, ensure_ascii=False).encode('utf8')
 
     def set_residents(self, columns, data, options):
         options = copy(options)

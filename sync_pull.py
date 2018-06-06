@@ -13,8 +13,6 @@ config = json.load(open(os.path.join(__location__, 'config.json')))
 sql = open(os.path.join(__location__, config['pull_sql'])).read()
 columns = json.load(open(os.path.join(__location__, config['pull_map'])))
 api = sch_client.API(config['uri'], config['key'], config['secret'])
-if 'input_encoding' in config:
-    api.input_encoding = config['input_encoding']
 
 dbms = config['dbms'] if 'dbms' in config else 'odbc'
 if dbms == 'oracle':

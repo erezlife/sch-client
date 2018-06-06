@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sch_client
 import json
@@ -27,8 +27,7 @@ csvname = args.csvname if args.csvname is not None else csvtemp
 # initialize sch api library
 identifier = config['identifier'] if 'identifier' in config else None
 api = sch_client.API(config['uri'], config['key'], config['secret'], identifier)
-if 'input_encoding' in config:
-    api.input_encoding = config['input_encoding']
+encoding = config['input_encoding'] if 'input_encoding' in config else 'utf8'
 
 # begin import process
 api.printme('------ Begin csv_import ------')
@@ -40,11 +39,9 @@ deactivate_missing = config['deactivate_missing_residents'] if 'deactivate_missi
 named_columns = {}
 resident_ids = {}   # dictionary of resident id lists for each instance
 
-
-with open(csvname, 'r') as csvfile:
+with open(csvname, 'r', encoding=encoding) as csvfile:
 
     reader = csv.reader(csvfile, dialect='excel')
-    encoding = api.input_encoding if hasattr(api, 'input_encoding') else 'utf8'
 
     # store named columns
     if has_header:
